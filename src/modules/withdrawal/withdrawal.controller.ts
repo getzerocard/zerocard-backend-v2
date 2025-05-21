@@ -17,6 +17,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { WithdrawalService } from './withdrawal.service';
+import { BalanceService } from './balance.service';
 import { PrivyAuthGuard } from '../../common/guards';
 import { PrivyUser } from '../auth/decorators/privy-user.decorator';
 import { PrivyUserData } from '../auth/interfaces/privy-user.interface';
@@ -35,6 +36,7 @@ import { Response } from '../../common/interceptors/response.interceptor';
 /**
  * Controller for managing cryptocurrency withdrawals
  */
+
 @ApiController('withdrawal', 'Withdrawal')
 @ApiBearerAuth()
 @ApiSecurity('identity-token')
@@ -48,7 +50,10 @@ import { Response } from '../../common/interceptors/response.interceptor';
 export class WithdrawalController {
   private readonly logger = new Logger(WithdrawalController.name);
 
-  constructor(private readonly withdrawalService: WithdrawalService) { }
+  constructor(
+    private readonly withdrawalService: WithdrawalService,
+    private readonly balanceService: BalanceService
+  ) { }
 
   /**
    * Process a cryptocurrency withdrawal for the authenticated user.
@@ -155,7 +160,7 @@ export class WithdrawalController {
     @Query('blockchainNetwork') blockchainNetwork?: string,
   ): Promise<TokenBalanceResponseDto> {
     this.logger.log(`Fetching token balances for user ${userData.userId}`);
-    const balances = await this.withdrawalService.getTokenBalance(userData.userId, symbols, chainType, blockchainNetwork);
+    const balances = await this.balanceService.getTokenBalance(userData.userId, symbols, chainType, blockchainNetwork);
     return { balances };
   }
 }

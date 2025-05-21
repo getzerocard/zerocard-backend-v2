@@ -44,7 +44,8 @@ export class PusherController {
             // user_info: { // Optional: Add more info if your client-side expects it for presence or other features
             //   name: privyUser.username || privyUser.email, // Example, adjust as needed
             //   email: privyUser.email,
-            // },
+            //
+            //  },
         };
 
         try {

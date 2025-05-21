@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WithdrawalController } from './withdrawal.controller';
 import { WithdrawalService } from './withdrawal.service';
+import { BalanceService } from './balance.service';
 import { AuthModule } from '../auth/auth.module';
 import { User } from '../user/entity/user.entity';
 import { FundsLock } from '../Card/entity/fundsLock.entity';
@@ -11,7 +12,7 @@ import { Transaction } from '../Transaction/entity/transaction.entity';
 @Module({
   imports: [AuthModule, TypeOrmModule.forFeature([User, FundsLock, Withdrawal, Transaction])],
   controllers: [WithdrawalController],
-  providers: [WithdrawalService],
-  exports: [WithdrawalService],
+  providers: [WithdrawalService, BalanceService],
+  exports: [WithdrawalService, BalanceService],
 })
 export class WithdrawalModule { }
