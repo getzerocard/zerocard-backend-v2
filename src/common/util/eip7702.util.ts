@@ -105,7 +105,7 @@ export async function executeGasAbstractedTransaction({
         // Create Nexus account using the dynamically loaded function
         const nexusAccount = await biconomyModule.toMultiChainNexusAccount({
             chains: [base,baseSepolia],
-            transports: [http('https://mainnet.base.org'), http('https://sepolia.base.org')],
+            transports: [http('https://mainnet.base.org'),http('https://sepolia.base.org')],
             signer: serverWalletAccount,
             accountAddress: address,
         });
