@@ -7,7 +7,7 @@ import {
   multiplyMoney,
   toMoney,
 } from '../../../common/util/money';
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 
 /**
  * Aggregates spending limits for a user into a single tank view for the current day.
