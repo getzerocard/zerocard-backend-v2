@@ -18,7 +18,7 @@ export async function fetchUserSpendingLimits(
   return manager.find(SpendingLimit, {
     where: {
       user: { userId },
-      nairaRemaining: MoreThan(0),
+      fiatRemaining: MoreThan(0),
     },
     order: { createdAt: 'ASC' }, // Oldest first (FIFO)
   });

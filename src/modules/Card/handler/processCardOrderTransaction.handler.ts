@@ -55,7 +55,7 @@ export async function processCardOrderTransaction(
       // Also save to Transaction entity to maintain a unified transaction history
       const transaction = new Transaction();
       transaction.user = user;
-      transaction.nairaAmount = null; // No Naira amount for crypto transactions
+      transaction.fiatAmount = null; // No fiat amount for crypto transactions
       transaction.usdAmount = orderFee;
       transaction.type = 'withdrawal';
       transaction.status = debitStatus;

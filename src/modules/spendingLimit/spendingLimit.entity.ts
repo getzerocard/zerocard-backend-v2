@@ -39,13 +39,13 @@ export class SpendingLimit {
   @IsNumber()
   @IsNotEmpty()
   @Min(0)
-  nairaAmount: number;
+  fiatAmount: number;
 
   @Column({ type: 'decimal', precision: 18, scale: 2, default: 0.0 })
   @IsNumber()
   @IsNotEmpty()
   @Min(0)
-  nairaRemaining: number;
+  fiatRemaining: number;
 
   @OneToMany(() => TransactionChunk, (chunk) => chunk.spendingLimit)
   transactionChunks: TransactionChunk[];

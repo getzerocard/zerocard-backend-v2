@@ -12,33 +12,25 @@ import { NotFoundException } from '@nestjs/common';
 
 // BalanceInputItem is now an internal concept, no longer exported.
 interface InternalBalanceItem {
-    nairaRemaining: number | string;
+    fiatRemaining: number | string;
     fxRate: number | string;
     id?: string; // For logging, can use spending limit ID
 }
 
 /**
- * Interface for the output of the aggregated balance calculation.
- */
-export interface AggregatedBalancesOutput {
-    totalNairaRemaining: string;
-    totalUsdEquivalent: string;
-}
-
-/**
- * Calculates the total remaining Naira and its equivalent USD value for a specific user,
+ * Calculates the total USD equivalent value for a specific user,
  * aggregated from their spending limits, considering individual FX rates.
- * Only processes items where nairaRemaining > 0.
+ * Only processes items where fiatRemaining > 0.
  *
  * @param userId The ID of the user for whom to calculate balances.
  * @param entityManager The TypeORM entity manager.
- * @returns An AggregatedBalancesOutput object.
+ * @returns A string representing the total USD equivalent value.
  * @throws NotFoundException if the user is not found.
  */
 export async function calculateAggregatedBalancesForUser(
     userId: string,
     entityManager: EntityManager,
-): Promise<AggregatedBalancesOutput> {
+): Promise<string> {
     const user = await entityManager.findOne(User, {
         where: { userId },
         relations: ['spendingLimits'], // Ensure spendingLimits are loaded
@@ -48,24 +40,21 @@ export async function calculateAggregatedBalancesForUser(
         throw new NotFoundException(`User with ID ${userId} not found.`);
     }
 
-    let totalNaira = toMoney(0);
+    let totalfiat = toMoney(0);
     let totalUsd = toMoney(0);
 
     const spendingLimits = user.spendingLimits || [];
 
     if (spendingLimits.length === 0) {
-        return {
-            totalNairaRemaining: formatMoney(totalNaira),
-            totalUsdEquivalent: formatMoney(totalUsd),
-        };
+        return formatMoney(totalUsd);
     }
 
     for (const limit of spendingLimits) {
-        // Use limit.nairaRemaining and limit.fxRate directly
-        const nairaRemainingDecimal = toMoney(limit.nairaRemaining);
+        // Use limit.fiatRemaining and limit.fxRate directly
+        const fiatRemainingDecimal = toMoney(limit.fiatRemaining);
 
-        if (nairaRemainingDecimal.greaterThan(0)) {
-            totalNaira = addMoney(totalNaira, nairaRemainingDecimal);
+        if (fiatRemainingDecimal.greaterThan(0)) {
+            totalfiat = addMoney(totalfiat, fiatRemainingDecimal);
 
             const fxRateDecimal = toMoney(limit.fxRate);
 
@@ -77,15 +66,12 @@ export async function calculateAggregatedBalancesForUser(
             }
 
             const usdEquivalentForItem = divideMoney(
-                nairaRemainingDecimal,
+                fiatRemainingDecimal,
                 fxRateDecimal,
             );
             totalUsd = addMoney(totalUsd, usdEquivalentForItem);
         }
     }
 
-    return {
-        totalNairaRemaining: formatMoney(totalNaira),
-        totalUsdEquivalent: formatMoney(totalUsd),
-    };
+    return formatMoney(totalUsd);
 }

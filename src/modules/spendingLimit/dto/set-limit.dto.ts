@@ -59,16 +59,16 @@ export class SetSpendingLimitResponseDto {
   fxRate: string;
 
   @ApiProperty({
-    description: 'Naira amount of the limit',
+    description: 'fiat amount of the limit',
     example: 120050,
   })
-  nairaAmount: number;
+  fiatAmount: number;
 
   @ApiProperty({
-    description: 'Naira remaining for spending',
+    description: 'fiat remaining for spending',
     example: 120050,
   })
-  nairaRemaining: number;
+  fiatRemaining: number;
 
   @ApiProperty({
     description: 'Date and time the limit was created',
@@ -127,8 +127,8 @@ export class SetSpendingLimitSuccessResponse {
             userId: 'did:privy:user123',
             usdAmount: 100,
             fxRate: '1200.50',
-            nairaAmount: 120050,
-            nairaRemaining: 120050,
+            fiatAmount: 120050,
+            fiatRemaining: 120050,
             createdAt: '2024-01-01T12:00:00.000Z',
             updatedAt: '2024-01-01T12:30:00.000Z',
             orderId: 'order_xyz789',

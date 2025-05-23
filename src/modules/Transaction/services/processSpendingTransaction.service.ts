@@ -25,14 +25,14 @@ export class ProcessTransactionService {
     private readonly spendingLimitRepository: Repository<SpendingLimit>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   /**
-   * Processes a spending event by allocating Naira across user's spending limits (FIFO).
+   * Processes a spending event by allocating fiat across user's spending limits (FIFO).
    * Creates Transaction and TransactionChunk records.
    * Runs within a database transaction to ensure atomicity.
    * @param userId - The ID of the user spending.
-   * @param nairaAmount - The total amount spent in Naira.
+   * @param fiatAmount - The total amount spent in fiat.
    * @param transactionReference - The reference for the transaction.
    * @param merchantName - The name of the merchant.
    * @param merchantId - The merchant identifier.
@@ -50,7 +50,7 @@ export class ProcessTransactionService {
    */
   async processSpending(
     userId: string,
-    nairaAmount: number,
+    fiatAmount: number,
     transactionReference: string,
     merchantName: string,
     merchantId: string,
@@ -67,7 +67,7 @@ export class ProcessTransactionService {
       async (transactionalEntityManager) => {
         return await processTransaction(
           userId,
-          nairaAmount,
+          fiatAmount,
           transactionReference,
           merchantName,
           merchantId,
@@ -152,7 +152,7 @@ export class ProcessTransactionService {
     );
     return {
       transactionId: transaction.authorizationId,
-      amount: transaction.nairaAmount,
+      amount: transaction.fiatAmount,
       currency: data?.object?.currency || 'NGN',
     };
   }

@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 # Decimal.js Guidelines for Monetary Calculations
@@ -21,7 +21,7 @@ To prevent floating-point precision issues in financial calculations, we use the
    - Functions handling monetary values should accept `number | string` as input types to accommodate various data formats.
 
 3. **Precision and Formatting**
-   - Monetary fields in entities should be defined with a precision of 18 and a scale of 2 for currency amounts (e.g., USD, Naira).
+   - Monetary fields in entities should be defined with a precision of 18 and a scale of 2 for currency amounts (e.g., USD, fiat).
    - Exchange rates should use a precision of 18 and a scale of 4 for higher accuracy.
    - Use `formatMoney()` to convert `Decimal` values to formatted strings or numbers for storage or display.
 

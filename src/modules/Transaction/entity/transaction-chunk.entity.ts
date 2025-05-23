@@ -20,10 +20,10 @@ export class TransactionChunk {
   spendingLimit: SpendingLimit; // The spending limit from which this chunk was taken
 
   @Column('decimal', { precision: 10, scale: 2 })
-  nairaUsed: number; // Amount of Naira used from this spending limit
+  fiatUsed: number; // Amount of fiat used from this spending limit
 
   @Column('decimal', { precision: 10, scale: 2 })
-  usdEquivalent: number; // USD equivalent (nairaUsed / fxRate)
+  usdEquivalent: number; // USD equivalent (fiatUsed / fxRate)
 
   @CreateDateColumn()
   createdAt: Date;

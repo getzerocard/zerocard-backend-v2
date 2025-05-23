@@ -171,7 +171,7 @@ export class WithdrawalService {
           const transaction = new Transaction();
           transaction.user = user;
           transaction.usdAmount = parseFloat(amount) || 0;
-          transaction.nairaAmount = null;
+          transaction.fiatAmount = null;
           transaction.type = 'withdrawal';
           transaction.status = 'completed';
           transaction.cardId = null;

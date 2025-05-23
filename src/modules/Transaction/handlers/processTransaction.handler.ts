@@ -8,15 +8,15 @@ import { Transaction } from '../entity/transaction.entity';
 import { SpendingLimit } from '../../spendingLimit/spendingLimit.entity';
 import { findUserOrFail } from './findUserOrFail';
 import { fetchUserSpendingLimits } from './fetchUserSpendingLimits';
-import { allocateNairaToLimits } from './allocateNairaToLimits';
+import { allocatefiatToLimits } from './allocateFiatToLimits';
 import { createTransactionEntity } from './createTransactionEntity';
 
 /**
- * Processes a spending event by allocating Naira across user's spending limits (FIFO).
+ * Processes a spending event by allocating fiat across user's spending limits (FIFO).
  * Creates Transaction and TransactionChunk records.
  * Runs within a database transaction to ensure atomicity.
  * @param userId - The ID of the user spending.
- * @param nairaAmount - The total amount spent in Naira.
+ * @param fiatAmount - The total amount spent in fiat.
  * @param transactionId - The unique identifier for the transaction.
  * @param transactionReference - The reference for the transaction.
  * @param merchantName - The name of the merchant.
@@ -35,7 +35,7 @@ import { createTransactionEntity } from './createTransactionEntity';
  */
 export async function processTransaction(
   userId: string,
-  nairaAmount: number,
+  fiatAmount: number,
   transactionReference: string,
   merchantName: string,
   merchantId: string,
@@ -53,11 +53,11 @@ export async function processTransaction(
   toAddress: string | null = null,
 ): Promise<Transaction> {
   logger.log(
-    `Starting transaction processing for user ${userId} amount ${nairaAmount}`,
+    `Starting transaction processing for user ${userId} amount ${fiatAmount}`,
   );
 
-  // Strip out the negative sign from nairaAmount
-  nairaAmount = Math.abs(nairaAmount);
+  // Strip out the negative sign from fiatAmount
+  fiatAmount = Math.abs(fiatAmount);
 
   try {
     return await entityManager.transaction(
@@ -77,13 +77,13 @@ export async function processTransaction(
           );
         }
 
-        const allocationResult = allocateNairaToLimits(
-          nairaAmount,
+        const allocationResult = allocatefiatToLimits(
+          fiatAmount,
           spendingLimits,
         );
         if (allocationResult.remainingAmount > 0) {
           logger.error(
-            `Insufficient spending limit balance for user ${userId}. Required: ${nairaAmount}, Available: ${nairaAmount - allocationResult.remainingAmount}. Allocation: ${JSON.stringify(allocationResult)}`,
+            `Insufficient spending limit balance for user ${userId}. Required: ${fiatAmount}, Available: ${fiatAmount - allocationResult.remainingAmount}. Allocation: ${JSON.stringify(allocationResult)}`,
           );
           throw new InternalServerErrorException(
             `Insufficient spending limit balance for user ${userId}.`,
@@ -92,7 +92,7 @@ export async function processTransaction(
 
         const transactionEntity = createTransactionEntity(
           user,
-          nairaAmount,
+          fiatAmount,
           allocationResult.usdTotal,
           allocationResult.allocatedChunks,
           transactionReference,

@@ -42,7 +42,7 @@ export class SetLimitService {
    * Sets a spending limit for a user after creating an offramp order.
    * This method first checks if the user has sufficient balance, then creates an offramp order using the provided details,
    * retrieves the exchange rate from the order status, and then sets the spending limit
-   * in both USD and Naira based on the retrieved rate.
+   * in both USD and fiat based on the retrieved rate.
    * @param userId - The unique identifier of the user
    * @param usdAmount - The spending limit amount in USD (can be number or string)
    * @param chainType - The type of blockchain ('ethereum' or 'solana')
@@ -235,7 +235,7 @@ export class SetLimitService {
     }
 
     // Extract fxRate from statusData if available
-    const fxRateRaw = statusData.Rate ? parseFloat(statusData.Rate) / 100 : 0;
+    const fxRateRaw = statusData.Rate ? parseFloat(statusData.Rate) : 0;
     if (fxRateRaw === 0) {
       this.logger.warn(
         `No weighted rate returned from offramp service for order ${orderId}`,
@@ -255,19 +255,19 @@ export class SetLimitService {
           // Create a reference to the user
           const userReference = { userId } as User;
           const fxRateDecimal = fxRate;
-          const nairaAmountDecimal = multiplyMoney(
+          const fiatAmountDecimal = multiplyMoney(
             usdAmountDecimal,
             fxRateDecimal,
           );
-          const nairaAmount = parseFloat(formatMoney(nairaAmountDecimal));
+          const fiatAmount = parseFloat(formatMoney(fiatAmountDecimal));
           const spendingLimit = transactionalEntityManager.create(
             SpendingLimit,
             {
               user: userReference,
               usdAmount: parseFloat(formatMoney(usdAmountDecimal)),
               fxRate: parseFloat(formatMoney(fxRateDecimal)),
-              nairaAmount,
-              nairaRemaining: nairaAmount,
+              fiatAmount,
+              fiatRemaining: fiatAmount,
               offramp: offramp,
               chainType: chainType,
               tokenSymbol: tokenSymbol,

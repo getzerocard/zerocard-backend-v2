@@ -11,22 +11,22 @@ export class LimitTankFetchService {
   constructor(
     @InjectRepository(SpendingLimit)
     private readonly spendingLimitRepository: Repository<SpendingLimit>,
-  ) {}
+  ) { }
 
   /**
    * Aggregates spending limits for a user into a single tank view for the current day.
-   * Returns total limit in Naira and USD, and percentage used for the day.
+   * Returns total limit in fiat and USD, and percentage used for the day.
    * Resets daily at midnight based on the provided timezone.
    * Accumulates new limits added on the current day.
    * @param userId - The ID of the user.
    * @param timezone - The timezone of the user to determine the current day (e.g., 'Africa/Lagos').
-   * @returns An object containing total Naira limit, total USD limit, and percentage used for the day.
+   * @returns An object containing total fiat limit, total USD limit, and percentage used for the day.
    */
   async getLimitTank(
     userId: string,
     timezone: string = 'UTC',
   ): Promise<{
-    totalNairaLimit: number;
+    totalfiatLimit: number;
     totalUsdLimit: number;
     percentageUsed: number;
   }> {

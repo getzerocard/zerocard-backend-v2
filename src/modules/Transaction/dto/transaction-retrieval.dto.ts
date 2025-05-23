@@ -95,8 +95,8 @@ export class TransactionResponseDto {
   })
   transactionType: string;
 
-  @ApiProperty({ description: 'Transaction amount in Naira', required: false })
-  nairaAmount?: number;
+  @ApiProperty({ description: 'Transaction amount in fiat', required: false })
+  fiatAmount?: number;
 
   @ApiProperty({ description: 'Category of the transaction' })
   category: string;
@@ -106,6 +106,9 @@ export class TransactionResponseDto {
     required: false,
   })
   effectiveRate?: number;
+
+  @ApiProperty({ description: 'Fiat code for the transaction', required: false })
+  fiatCode?: string;  
 
   @ApiProperty({
     description: 'Channel through which the transaction was made',
@@ -181,7 +184,7 @@ export class GetTransactionsSuccessResponse {
                 { chain: 'ethereum', blockchain: 'Base', token: 'USDC' },
               ],
               transactionType: 'spending',
-              nairaAmount: 22500.0,
+              fiatAmount: 22500.0,
               category: 'purchase',
               effectiveRate: 450.0,
               channel: 'card',
@@ -205,7 +208,7 @@ export class GetTransactionsSuccessResponse {
                 { chain: 'solana', blockchain: 'Mainnet', token: 'SOL' },
               ],
               transactionType: 'withdrawal',
-              nairaAmount: 9000.00,
+              fiatAmount: 9000.00,
               category: 'transfer',
               effectiveRate: 450.0,
               channel: 'internal',

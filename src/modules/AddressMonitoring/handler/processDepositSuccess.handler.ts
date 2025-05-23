@@ -32,7 +32,7 @@ export async function processDepositSuccessEvent(
         }],
         recipientAddress: eventData.recipientAddress,
         senderAddress: eventData.senderAddress,
-        nairaAmount: null,
+        fiatAmount: null,
         cardId: null,
         state: null,
         city: null,
@@ -66,7 +66,7 @@ export async function processDepositSuccessEvent(
         newTransaction.transactionModeType = params.transactionModeType;
         newTransaction.tokenInfo = params.tokenInfo;
         newTransaction.recipientAddress = params.recipientAddress;
-        newTransaction.nairaAmount = params.nairaAmount;
+        newTransaction.fiatAmount = params.fiatAmount;
         newTransaction.cardId = params.cardId;
         newTransaction.state = params.state;
         newTransaction.city = params.city;

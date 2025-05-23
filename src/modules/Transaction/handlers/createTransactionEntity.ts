@@ -6,7 +6,7 @@ import type { TransactionChunk } from '../entity/transaction-chunk.entity';
 /**
  * Creates a Transaction entity with the provided details and associated chunks.
  * @param user - The User entity associated with the transaction.
- * @param nairaAmount - The total amount spent in Naira.
+ * @param fiatAmount - The total amount spent in fiat.
  * @param usdTotal - The total amount in USD.
  * @param allocatedChunks - An array of TransactionChunk entities representing allocations.
  * @param transactionReference - The reference for the transaction.
@@ -28,7 +28,7 @@ import type { TransactionChunk } from '../entity/transaction-chunk.entity';
  */
 export function createTransactionEntity(
   user: User,
-  nairaAmount: number,
+  fiatAmount: number,
   usdTotal: number,
   allocatedChunks: TransactionChunk[],
   transactionReference: string,
@@ -52,7 +52,7 @@ export function createTransactionEntity(
   const transaction = new Transaction();
   transaction.type = 'spending';
   transaction.user = user;
-  transaction.nairaAmount = nairaAmount;
+  transaction.fiatAmount = fiatAmount;
   transaction.usdAmount = usdTotal;
   transaction.effectiveFxRate = effectiveFxRate;
   transaction.transactionReference = transactionReference;

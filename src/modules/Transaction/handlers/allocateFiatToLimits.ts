@@ -12,13 +12,13 @@ import {
 } from '../../../common/util/money';
 
 /**
- * Allocates the Naira amount across spending limits and creates TransactionChunks.
- * @param nairaAmountToAllocate - The total Naira amount to allocate.
+ * Allocates the fiat amount across spending limits and creates TransactionChunks.
+ * @param fiatAmountToAllocate - The total fiat amount to allocate.
  * @param limits - An array of SpendingLimit entities to allocate the amount across.
  * @returns An object containing allocated chunks, updated limits, total USD equivalent, effective fxRate, and remaining unallocated amount.
  */
-export function allocateNairaToLimits(
-  nairaAmountToAllocate: number | string,
+export function allocatefiatToLimits(
+  fiatAmountToAllocate: number | string,
   limits: SpendingLimit[],
 ): {
   allocatedChunks: TransactionChunk[];
@@ -28,44 +28,44 @@ export function allocateNairaToLimits(
   remainingAmount: number; // Amount that couldn't be allocated
   tokenInfo: { chain: string; blockchain: string; token: string }[];
 } {
-  const logger = new Logger('AllocateNairaToLimits');
-  const nairaAmountDecimal = toMoney(nairaAmountToAllocate);
+  const logger = new Logger('AllocatefiatToLimits');
+  const fiatAmountDecimal = toMoney(fiatAmountToAllocate);
   logger.debug(
-    `Allocating ${nairaAmountDecimal.toString()} Naira across ${limits.length} spending limits.`,
+    `Allocating ${fiatAmountDecimal.toString()} fiat across ${limits.length} spending limits.`,
   );
   const allocatedChunks: TransactionChunk[] = [];
   const updatedLimits: SpendingLimit[] = [];
-  let remainingAmountDecimal = nairaAmountDecimal;
+  let remainingAmountDecimal = fiatAmountDecimal;
   let usdTotalDecimal = toMoney(0);
 
   for (const limit of limits) {
     if (remainingAmountDecimal.lte(0)) {
       break; // Fully allocated
     }
-    const limitNairaRemainingDecimal = toMoney(limit.nairaRemaining);
-    if (limitNairaRemainingDecimal.lte(0)) {
+    const limitfiatRemainingDecimal = toMoney(limit.fiatRemaining);
+    if (limitfiatRemainingDecimal.lte(0)) {
       continue; // Skip limits with no balance
     }
 
-    const nairaToUseFromLimitDecimal = minMoney(
+    const fiatToUseFromLimitDecimal = minMoney(
       remainingAmountDecimal,
-      limitNairaRemainingDecimal,
+      limitfiatRemainingDecimal,
     );
-    const nairaToUseFromLimit = parseFloat(
-      formatMoney(nairaToUseFromLimitDecimal),
+    const fiatToUseFromLimit = parseFloat(
+      formatMoney(fiatToUseFromLimitDecimal),
     );
 
     // Handle potential division by zero if fxRate is 0 or null
     const fxRateDecimal = limit.fxRate ? toMoney(limit.fxRate) : toMoney(0);
     const usdEquivalentDecimal = fxRateDecimal.gt(0)
-      ? divideMoney(nairaToUseFromLimitDecimal, fxRateDecimal)
+      ? divideMoney(fiatToUseFromLimitDecimal, fxRateDecimal)
       : toMoney(0);
     const usdEquivalent = parseFloat(formatMoney(usdEquivalentDecimal));
 
     // Create a new chunk
     const chunk = new TransactionChunk(); // Use 'new' as we create instances
     chunk.spendingLimit = limit; // Link to the specific limit
-    chunk.nairaUsed = nairaToUseFromLimit;
+    chunk.fiatUsed = fiatToUseFromLimit;
     chunk.usdEquivalent = usdEquivalent;
     // createdAt will be set automatically by TypeORM @CreateDateColumn
 
@@ -75,38 +75,38 @@ export function allocateNairaToLimits(
     usdTotalDecimal = addMoney(usdTotalDecimal, usdEquivalentDecimal);
     remainingAmountDecimal = subtractMoney(
       remainingAmountDecimal,
-      nairaToUseFromLimitDecimal,
+      fiatToUseFromLimitDecimal,
     );
 
     // Prepare the limit for update
-    // Ensure nairaRemaining doesn't go below zero due to potential floating point inaccuracies
-    const newNairaRemainingDecimal = subtractMoney(
-      limitNairaRemainingDecimal,
-      nairaToUseFromLimitDecimal,
+    // Ensure fiatRemaining doesn't go below zero due to potential floating point inaccuracies
+    const newfiatRemainingDecimal = subtractMoney(
+      limitfiatRemainingDecimal,
+      fiatToUseFromLimitDecimal,
     );
-    limit.nairaRemaining = newNairaRemainingDecimal.gt(0)
-      ? parseFloat(formatMoney(newNairaRemainingDecimal))
+    limit.fiatRemaining = newfiatRemainingDecimal.gt(0)
+      ? parseFloat(formatMoney(newfiatRemainingDecimal))
       : 0;
     updatedLimits.push(limit); // Add the modified limit to be saved later
 
     logger.debug(
-      `Allocated ${nairaToUseFromLimit} from limit ${limit.id}. Remaining on limit: ${limit.nairaRemaining}. Total remaining to allocate: ${remainingAmountDecimal.toString()}`,
+      `Allocated ${fiatToUseFromLimit} from limit ${limit.id}. Remaining on limit: ${limit.fiatRemaining}. Total remaining to allocate: ${remainingAmountDecimal.toString()}`,
     );
   }
   const usdTotal = parseFloat(formatMoney(usdTotalDecimal));
   const remainingAmount = parseFloat(formatMoney(remainingAmountDecimal));
   logger.debug(
-    `Finished allocation. Total USD: ${usdTotal}. Chunks created: ${allocatedChunks.length}. Unallocated Naira: ${remainingAmount}`,
+    `Finished allocation. Total USD: ${usdTotal}. Chunks created: ${allocatedChunks.length}. Unallocated fiat: ${remainingAmount}`,
   );
 
   // Calculate the effective fxRate for the transaction
-  const allocatedNairaDecimal = subtractMoney(
-    nairaAmountDecimal,
+  const allocatedfiatDecimal = subtractMoney(
+    fiatAmountDecimal,
     remainingAmountDecimal,
   );
   const effectiveFxRate =
-    allocatedNairaDecimal.gt(0) && usdTotalDecimal.gt(0)
-      ? calculateRate(usdTotal, allocatedNairaDecimal.toNumber())
+    allocatedfiatDecimal.gt(0) && usdTotalDecimal.gt(0)
+      ? calculateRate(usdTotal, allocatedfiatDecimal.toNumber())
       : 0;
 
   return {
