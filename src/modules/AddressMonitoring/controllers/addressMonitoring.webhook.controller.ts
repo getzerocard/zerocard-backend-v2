@@ -273,48 +273,50 @@ export class AddressMonitoringWebhookController {
             }
 
             if (eventData.status === "SUCCESS") {
-                // Call the new handler function
                 await processDepositSuccessEvent(eventData, this.entityManager);
 
-                // --- Begin Pusher Event Trigger ---
-                const userIdForPusher = eventData.address?.name; // This is the Privy User ID
+                const userIdForPusher = eventData.address?.name;
                 if (userIdForPusher) {
                     try {
-                        const wallets = await this.privyService.getWalletId(userIdForPusher, 'ethereum');
-                        if (wallets && wallets.length > 0 && wallets[0].address) {
-                            const walletAddress = wallets[0].address;
-                            const pusherChannel = `private-${walletAddress}`;
+                        const actualChainType = eventData.blockchain.isEvmCompatible ? "ethereum" : "solana";
+
+                        // Fetch the specific wallet for the determined chain type
+                        const wallets = await this.privyService.getWalletId(userIdForPusher, actualChainType);
+
+                        // Ensure we use the recipientAddress from the event data if it matches one of the user's wallets for that chain.
+                        // This is more reliable than just picking the first wallet if the user has multiple wallets of the same chain type linked.
+                        const targetWallet = wallets.find(w => w.address.toLowerCase() === eventData.recipientAddress.toLowerCase());
+
+                        if (targetWallet && targetWallet.address) {
+                            const walletAddressForChannel = targetWallet.address; // Use the matched recipient address
+                            // Construct channel name with chainType: private-<chainType>-<walletAddress>
+                            const pusherChannel = `private-${actualChainType}-${walletAddressForChannel}`;
                             const pusherEvent = 'deposit-update';
                             const pusherPayload = {
                                 tokenSymbol: eventData.asset.symbol,
                                 type: eventData.type,
-                                blockchainNetwork: eventData.blockchain.slug,
-                                chainType: eventData.blockchain.isEvmCompatible ? "ethereum" : "solana",
+                                blockchainNetwork: eventData.blockchain.slug, // e.g., "base", "solana-mainnet"
+                                chainType: actualChainType, // "ethereum" or "solana"
                                 status: eventData.status,
                                 hash: eventData.hash,
                                 senderAddress: eventData.senderAddress,
-                                recipientAddress: eventData.recipientAddress, // Added recipient address for completeness
-                                amount: eventData.amount, // Added amount for completeness
+                                recipientAddress: eventData.recipientAddress,
+                                amount: eventData.amount,
                             };
 
                             this.logger.log(`Attempting to send Pusher event to channel ${pusherChannel} for event ${pusherEvent}`);
                             await this.pusherService.trigger(pusherChannel, pusherEvent, pusherPayload);
                             this.logger.log(`Pusher event sent successfully to channel ${pusherChannel}.`);
                         } else {
-                            this.logger.warn(`Could not send Pusher event for deposit.success: No Ethereum wallet address found in Privy for user ${userIdForPusher}.`);
+                            this.logger.warn(`Could not send Pusher event for deposit.success: No matching ${actualChainType} wallet address found in Privy for user ${userIdForPusher} that matches recipient ${eventData.recipientAddress}.`);
                         }
                     } catch (privyOrPusherError: any) {
-                        // Log errors from PrivyService or PusherService but don't let them break the webhook response
                         this.logger.error(`Error during Privy wallet fetch or Pusher event trigger for deposit.success: ${privyOrPusherError.message}`, privyOrPusherError.stack);
                     }
                 } else {
                     this.logger.warn('Could not send Pusher event for deposit.success: User ID (address.name) not available in eventData.');
                 }
-                // --- End Pusher Event Trigger ---
-
-                // If handler is successful, send OK response
                 return res.status(HttpStatus.OK).send('Webhook processed and transaction created (deposit.success).');
-
             } else {
                 this.logger.log(`Deposit event received with non-SUCCESS status: ${eventData.status}. Transaction not created.`);
                 return res.status(HttpStatus.OK).send('Webhook processed, non-SUCCESS status for deposit (deposit.success).');

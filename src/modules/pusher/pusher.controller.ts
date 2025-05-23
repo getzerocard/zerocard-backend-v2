@@ -1,62 +1,87 @@
-import { Body, Post, Res, HttpStatus, Logger, InternalServerErrorException, ValidationPipe } from '@nestjs/common';
+import { Body, Post, HttpStatus, Logger, ValidationPipe, UnauthorizedException } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import type { Response } from 'express';
 import { PusherService } from './pusher.service';
-import { PusherUserAuthRequestDto, type PusherAuthUser } from './dto/pusher.dto';
+import { PusherChannelsAuthRequestDto, PusherChannelsAuthResponseDto, PusherChannelsAuthErrorResponses } from './dto/pusher.dto';
 import { PrivyUser } from '../auth/decorators/privy-user.decorator';
 import type { PrivyUserData } from '../auth/interfaces/privy-user.interface';
 import { ApiController } from '../../common/decorators/api-controller.decorator';
+import { PrivyService } from '../auth/privy.service';
+import { ApiStandardResponse } from '../../common/decorators/api-response.decorator';
 
 @ApiController('pusher', 'Pusher')
 export class PusherController {
     private readonly logger = new Logger(PusherController.name);
 
-    constructor(private readonly pusherService: PusherService) { }
+    constructor(
+        private readonly pusherService: PusherService,
+        private readonly privyService: PrivyService
+    ) { }
 
-    @Post('user-auth')
-    @ApiOperation({ summary: 'Authenticate a user for Pusher user channels' })
-    @ApiBody({ type: PusherUserAuthRequestDto })
-    @ApiResponse({ status: 200, description: 'Pusher user authentication successful.' })
-    @ApiResponse({ status: 400, description: 'Bad Request (e.g., missing socket_id).' })
-    @ApiResponse({ status: 401, description: 'Unauthorized (application auth failed).' })
-    @ApiResponse({ status: 500, description: 'Internal server error during Pusher auth.' })
-    async authenticatePusherUser(
-        @Body(new ValidationPipe()) body: PusherUserAuthRequestDto,
+    @Post('channels-auth')
+    @ApiOperation({ summary: 'Authorize private channel subscriptions in batch' })
+    @ApiStandardResponse(PusherChannelsAuthResponseDto)
+    @ApiBody({ type: PusherChannelsAuthRequestDto })
+    @ApiResponse(PusherChannelsAuthErrorResponses.definitions[0])
+    @ApiResponse(PusherChannelsAuthErrorResponses.definitions[1])
+    @ApiResponse(PusherChannelsAuthErrorResponses.definitions[2])
+    async authorizeChannels(
+        @Body(new ValidationPipe()) body: PusherChannelsAuthRequestDto,
         @PrivyUser() privyUser: PrivyUserData,
-        @Res() res: Response,
-    ) {
-        this.logger.log(`Attempting Pusher user authentication for socket_id: ${body.socket_id} and user: ${privyUser.userId}`);
+    ): Promise<PusherChannelsAuthResponseDto> {
+        this.logger.log(`Authorizing channels for user ${privyUser.userId}, channels: ${body.channel_names.join(', ')}`);
 
-        if (!privyUser || !privyUser.userId) {
-            this.logger.warn('Pusher auth called by an unauthenticated or invalid application user.');
-            // AuthGuard should prevent this, but as a safeguard:
-            return res.status(HttpStatus.UNAUTHORIZED).json({
-                statusCode: HttpStatus.UNAUTHORIZED,
-                success: false,
-                message: 'Application user authentication failed.',
-            });
+        if (!privyUser?.userId) {
+            throw new UnauthorizedException('Authentication required for channel authorization.');
         }
 
-        // Construct the user data for Pusher.authenticateUser
-        // The `id` for Pusher MUST be the privyUser.userId
-        const pusherUserData: PusherAuthUser = {
-            id: privyUser.userId, // Crucial: This is the user ID Pusher will use
-            // user_info: { // Optional: Add more info if your client-side expects it for presence or other features
-            //   name: privyUser.username || privyUser.email, // Example, adjust as needed
-            //   email: privyUser.email,
-            //
-            //  },
-        };
+        const channelAuthStatuses: Record<string, { status: number; data?: any; message?: string }> = {};
 
-        try {
-            const authResponse = this.pusherService.authenticateUser(body.socket_id, pusherUserData);
-            return res.status(HttpStatus.OK).json(authResponse);
-        } catch (error: any) {
-            this.logger.error(`Pusher user authentication process failed in controller: ${error.message}`, error.stack);
-            // The service might throw its own errors, or Pusher client might throw.
-            throw new InternalServerErrorException(
-                error.message || 'An error occurred during Pusher user authentication.'
-            );
+        for (const channelName of body.channel_names) {
+            try {
+                const channelPattern = /^private-(ethereum|solana)-([a-zA-Z0-9]{30,})$/;
+                const match = channelName.match(channelPattern);
+
+                if (!match) {
+                    this.logger.warn(`Invalid channel format: ${channelName} for user ${privyUser.userId}`);
+                    channelAuthStatuses[channelName] = {
+                        status: HttpStatus.BAD_REQUEST,
+                        message: 'Invalid channel name format. Expected private-<chainType>-<walletAddress>.',
+                    };
+                    continue;
+                }
+
+                const [, parsedChainType, parsedWalletAddress] = match;
+                const chainType = parsedChainType as 'ethereum' | 'solana';
+
+                this.logger.debug(`Validating ownership for channel: ${channelName}, user: ${privyUser.userId}, chain: ${chainType}, address: ${parsedWalletAddress}`);
+
+                const userWallets = await this.privyService.getWalletId(privyUser.userId, chainType);
+                const isOwner = userWallets.some(w => w.address.toLowerCase() === parsedWalletAddress.toLowerCase());
+
+                if (!isOwner) {
+                    this.logger.warn(`User ${privyUser.userId} not authorized for channel ${channelName}. Wallet ${parsedWalletAddress} not found or not owned on ${chainType}.`);
+                    channelAuthStatuses[channelName] = {
+                        status: HttpStatus.FORBIDDEN,
+                        message: 'Access to this channel denied - wallet not linked or not owned for the specified chain type.',
+                    };
+                    continue;
+                }
+
+                const authResponseData = this.pusherService.authorizeChannel(body.socket_id, channelName);
+                this.logger.log(`Successfully authorized channel ${channelName} for user ${privyUser.userId}`);
+                channelAuthStatuses[channelName] = {
+                    status: HttpStatus.OK,
+                    data: authResponseData,
+                };
+
+            } catch (error: any) {
+                this.logger.error(`Error authorizing channel ${channelName} for user ${privyUser.userId}: ${error.message}`, error.stack);
+                channelAuthStatuses[channelName] = {
+                    status: HttpStatus.INTERNAL_SERVER_ERROR,
+                    message: error.message || 'Internal server error during specific channel authorization.',
+                };
+            }
         }
+        return { channel_authorizations: channelAuthStatuses };
     }
 }

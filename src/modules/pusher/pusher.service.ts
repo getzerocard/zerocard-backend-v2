@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Pusher from 'pusher';
-import type { PusherAuthUser } from './dto/pusher.dto';
 
 @Injectable()
 export class PusherService {
@@ -34,24 +33,23 @@ export class PusherService {
     }
 
     /**
-     * Authenticates a user for Pusher user authentication.
-     * @param socketId The socket ID from the client.
-     * @param userData The user data, must include an `id` field.
-     * @returns The authentication response from Pusher.
+     * Authorizes a private channel subscription
+     * @param socketId The client's socket ID
+     * @param channelName The channel name being subscribed to
+     * @returns Pusher authorization response
      */
-    authenticateUser(socketId: string, userData: PusherAuthUser): any {
+    authorizeChannel(socketId: string, channelName: string): any {
         if (!this.pusher) {
-            this.logger.error('Pusher client not initialized due to missing configuration.');
-            throw new Error('Pusher service not available due to configuration errors.');
+            this.logger.error('Pusher client not initialized');
+            throw new Error('Pusher service unavailable');
         }
+
         try {
-            this.logger.debug(`Authenticating user for Pusher. Socket ID: ${socketId}, User ID: ${userData.id}`);
-            const authResponse = this.pusher.authenticateUser(socketId, userData);
-            this.logger.debug('Pusher user authentication successful.');
-            return authResponse;
+            this.logger.debug(`Authorizing channel: ${channelName} for socket: ${socketId}`);
+            return this.pusher.authorizeChannel(socketId, channelName);
         } catch (error: any) {
-            this.logger.error(`Pusher user authentication failed: ${error.message}`, error.stack);
-            throw error; // Re-throw the error to be handled by the controller
+            this.logger.error(`Channel authorization failed: ${error.message}`, error.stack);
+            throw error;
         }
     }
 
