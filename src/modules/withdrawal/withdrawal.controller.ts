@@ -1,13 +1,4 @@
-import {
-  Logger,
-  Param,
-  Post,
-  UnauthorizedException,
-  UseGuards,
-  Get,
-  Query,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Logger, Post, UseGuards, Get, Query, ValidationPipe, Body, Param } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -15,8 +6,9 @@ import {
   ApiSecurity,
   ApiExtraModels,
   ApiQuery,
+  ApiParam,
 } from '@nestjs/swagger';
-import { WithdrawalService } from './withdrawal.service';
+import { WithdrawalService } from './cryptoWithdrawal.service';
 import { BalanceService } from './balance.service';
 import { PrivyAuthGuard } from '../../common/guards';
 import { PrivyUser } from '../auth/decorators/privy-user.decorator';
@@ -28,10 +20,14 @@ import {
   TokenBalanceResponseDto,
   GetBalanceErrorResponses,
 } from './dto/withdrawal.dto';
-import { Trim } from '../../common/decorators/trim.decorator';
 import { ApiController } from '../../common/decorators/api-controller.decorator';
 import { ApiStandardResponse } from '../../common/decorators/api-response.decorator';
 import { Response } from '../../common/interceptors/response.interceptor';
+import { FiatWithdrawalDto, FiatWithdrawalResponseDto, FiatWithdrawalErrorResponses } from './dto/fiat-withdrawal.dto';
+import { BankListResponseDto, GetBankListErrorResponses } from './dto/bank-list.dto';
+import { FiatWithdrawalService } from './fiatwithdrwal.service';
+import { VerifyAccountDto, VerifyAccountResponseDataDto, VerifyAccountErrorResponses } from './dto/verify-account.dto';
+
 
 /**
  * Controller for managing cryptocurrency withdrawals
@@ -46,13 +42,19 @@ import { Response } from '../../common/interceptors/response.interceptor';
   WithdrawalQueryDto,
   WithdrawalResponseDataDto,
   TokenBalanceResponseDto,
+  FiatWithdrawalDto,
+  FiatWithdrawalResponseDto,
+  BankListResponseDto,
+  VerifyAccountDto,
+  VerifyAccountResponseDataDto,
 )
 export class WithdrawalController {
   private readonly logger = new Logger(WithdrawalController.name);
 
   constructor(
     private readonly withdrawalService: WithdrawalService,
-    private readonly balanceService: BalanceService
+    private readonly balanceService: BalanceService,
+    private readonly fiatWithdrawalService: FiatWithdrawalService
   ) { }
 
   /**
@@ -162,5 +164,80 @@ export class WithdrawalController {
     this.logger.log(`Fetching token balances for user ${userData.userId}`);
     const balances = await this.balanceService.getTokenBalance(userData.userId, symbols, chainType, blockchainNetwork);
     return { balances };
+  }
+
+  /**
+   * Process a fiat withdrawal for the authenticated user.
+   * @param dto The validated fiat withdrawal request body.
+   * @param userData The authenticated user's data.
+   * @returns Object containing the transaction details of the fiat withdrawal.
+   */
+  @Post('fiat/withdraw')
+  @ApiOperation({
+    summary: 'Process fiat withdrawal for authenticated user',
+    description: 'Initiate a fiat withdrawal for the authenticated user.',
+  })
+  @ApiStandardResponse(FiatWithdrawalResponseDto, 'Fiat withdrawal processed successfully')
+  @ApiResponse(FiatWithdrawalErrorResponses.R400_BAD_REQUEST)
+  @ApiResponse(FiatWithdrawalErrorResponses.R401_UNAUTHORIZED)
+  @ApiResponse(FiatWithdrawalErrorResponses.R500_INTERNAL_SERVER_ERROR)
+  async processFiatWithdrawal(
+    @PrivyUser() userData: PrivyUserData,
+    @Body(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true })) dto: FiatWithdrawalDto,
+  ): Promise<FiatWithdrawalResponseDto> {
+    this.logger.log(`Processing fiat withdrawal for user ${userData.userId} with params: ${JSON.stringify(dto)}`);
+    return this.fiatWithdrawalService.processFiatWithdrawal(userData.userId, dto);
+  }
+
+  /**
+   * Fetch the list of supported banks for a given fiat currency for fiat withdrawal.
+   * @param fiatCode The fiat currency code (e.g., NGN, USD).
+   * @returns List of supported banks.
+   */
+  @Get('banks/:fiatCode')
+  @ApiOperation({
+    summary: 'Get list of supported banks by fiat code',
+    description: 'Fetch the list of supported banks for a given fiat currency code for fiat withdrawal.',
+  })
+  @ApiParam({ name: 'fiatCode', type: String, required: true, example: 'NGN', description: 'The fiat currency code (e.g., NGN, USD)' })
+  @ApiStandardResponse(BankListResponseDto, 'List of supported banks retrieved successfully')
+  @ApiResponse(GetBankListErrorResponses.R400_BAD_REQUEST)
+  @ApiResponse(GetBankListErrorResponses.R500_INTERNAL_SERVER_ERROR)
+  async getBankList(
+    @Param('fiatCode') fiatCode: string,
+  ): Promise<BankListResponseDto> {
+    this.logger.log(`Fetching list of supported banks for fiat withdrawal for currency: ${fiatCode}`);
+    const banks = await this.fiatWithdrawalService.getBanksByFiatCode(fiatCode);
+    return { banks };
+  }
+
+  /**
+   * Verify bank account details.
+   * This is a public endpoint and does not require authentication.
+   * @param verifyAccountDto The DTO containing institution code and account number.
+   * @returns The verified account name.
+   */
+  @Post('fiat/verify-account')
+  @ApiOperation({
+    summary: 'Verify bank account details',
+    description: 'Verifies bank account details with an external provider. This is a public endpoint.',
+  })
+  @ApiStandardResponse(VerifyAccountResponseDataDto, 'Account verified successfully')
+  @ApiResponse(VerifyAccountErrorResponses.R400_BAD_REQUEST)
+  @ApiResponse(VerifyAccountErrorResponses.R500_INTERNAL_SERVER_ERROR)
+  @ApiResponse(VerifyAccountErrorResponses.R502_BAD_GATEWAY)
+  @ApiResponse(VerifyAccountErrorResponses.R503_SERVICE_UNAVAILABLE)
+  async verifyBankAccount(
+    @Body(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true })) verifyAccountDto: VerifyAccountDto,
+  ): Promise<VerifyAccountResponseDataDto> {
+    this.logger.log(`Request to verify bank account: ${JSON.stringify(verifyAccountDto)}`);
+    const accountName = await this.fiatWithdrawalService.verifyAccountNumber(
+      verifyAccountDto.institutionCode,
+      verifyAccountDto.accountNumber,
+    );
+    return {
+      accountName,
+      message: 'Account verified successfully'
+    };
   }
 }
