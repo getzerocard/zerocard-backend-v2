@@ -27,7 +27,10 @@ export class Transaction {
     nullable: true,
     default: 0.0,
   })
-  nairaAmount: number; // Transaction amount in Naira
+  fiatAmount: number; // Transaction amount in fiat
+
+  @Column({ type: 'varchar', length: 10, nullable: true, default: null })
+  fiatCode: string | null; // e.g., 'NGN', 'USD', 'KES'
 
   @Column({
     type: 'enum',

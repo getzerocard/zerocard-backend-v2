@@ -150,20 +150,22 @@ export class FiatWithdrawalService {
 
                 // Prepare transaction data from the direct response of createOrder
                 const tokenAmountUSD = parseFloat(offrampResponse.statusData.Amount) || 0; // This is the amount in token (e.g., USDC)
-                const fxRateRaw = offrampResponse.statusData.Rate ? parseFloat(offrampResponse.statusData.Rate) / 100 : 0; // e.g. if Rate is 75000 for 750.00 NGN per USD
+                // Assuming Rate is already in the correct decimal format (e.g., 1500 means 1500)
+                const fxRateRaw = offrampResponse.statusData.Rate ? parseFloat(offrampResponse.statusData.Rate) : 0;
 
                 // Calculate the destination fiat amount based on the token amount and FX rate
-                // This will be stored in the `nairaAmount` field of the Transaction entity for now.
-                let calculatedDestinationFiatAmount: number | null = null;
+                // This will be stored in the `fiatAmount` field of the Transaction entity for now.
+                let calculatedDestinationfiatAmount: number | null = null;
                 if (fxRateRaw > 0) {
-                    calculatedDestinationFiatAmount = parseFloat((tokenAmountUSD * fxRateRaw).toFixed(2));
+                    calculatedDestinationfiatAmount = parseFloat((tokenAmountUSD * fxRateRaw).toFixed(2));
                 }
 
                 await this.transactionRepository.manager.transaction(async (transactionalEntityManager) => {
                     const transaction = new Transaction();
                     transaction.user = user;
                     transaction.usdAmount = tokenAmountUSD; // Amount in USD (or stablecoin equivalent)
-                    transaction.nairaAmount = calculatedDestinationFiatAmount; // Calculated destination fiat amount (e.g., NGN, CFA)
+                    transaction.fiatAmount = calculatedDestinationfiatAmount; // Calculated destination fiat amount (e.g., NGN, CFA)
+                    transaction.fiatCode = fiat; // Set fiatCode from DTO input
                     transaction.effectiveFxRate = fxRateRaw > 0 ? fxRateRaw : null;
                     transaction.type = 'withdrawal';
                     transaction.status = 'completed'; // Since statusData.Status is 'settled'

@@ -13,7 +13,7 @@ interface TransactionResponse {
   usdAmount: number;
   tokenInfo: { chain: string; blockchain: string; token: string }[] | null;
   transactionType: string;
-  nairaAmount: number;
+  fiatAmount: number;
   category: string;
   effectiveRate: number;
   channel: string;
@@ -86,7 +86,7 @@ export class TransactionRetrievalService {
       'transaction.usdAmount',
       'transaction.tokenInfo',
       'transaction.type',
-      'transaction.nairaAmount',
+      'transaction.fiatAmount',
       'transaction.category',
       'transaction.effectiveFxRate',
       'transaction.channel',
@@ -136,13 +136,14 @@ export class TransactionRetrievalService {
       usdAmount: transaction.usdAmount,
       tokenInfo: transaction.tokenInfo,
       transactionType: transaction.type,
-      nairaAmount: transaction.nairaAmount,
+      fiatAmount: transaction.fiatAmount,
       category: transaction.category,
       effectiveRate: transaction.effectiveFxRate,
       channel: transaction.channel,
       transactionHash: null,
       transactionStatus: transaction.status,
       modeType: transaction.transactionModeType,
+      fiatCode: transaction.fiatCode,
       authorizationId: transaction.authorizationId,
       merchant: {
         merchantName: transaction.merchantName,
