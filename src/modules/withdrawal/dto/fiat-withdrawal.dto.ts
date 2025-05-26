@@ -45,15 +45,6 @@ export class FiatWithdrawalDto {
     tokenSymbol: string;
 
     @ApiProperty({
-        description: 'Network type (e.g., MAINET, TESTNET - usually derived from config, but can be passed if flexibility is needed)',
-        example: 'MAINET',
-        required: true,
-    })
-    @IsString()
-    @IsNotEmpty()
-    network: string; // This typically comes from config, but service method expects it.
-
-    @ApiProperty({
         description: 'Amount of tokens to offramp',
         example: '50.25',
         required: true,
