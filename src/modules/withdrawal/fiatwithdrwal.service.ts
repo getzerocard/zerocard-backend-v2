@@ -171,22 +171,22 @@ export class FiatWithdrawalService {
                     transaction.status = 'completed'; // Since statusData.Status is 'settled'
                     transaction.cardId = null;
                     transaction.transactionReference = offrampResponse.statusData.TxHash || offrampResponse.orderId;
-                    transaction.merchantName = 'Zero Card Fiat Withdrawal';
-                    transaction.merchantId = 'zerocard_fiat_withdrawal';
+                    transaction.merchantName = 'Zero Card';
+                    transaction.merchantId = 'zero_card';
                     transaction.state = null;
                     transaction.city = null;
-                    transaction.transactionHash = offrampResponse.statusData.TxHash || null;
+                    transaction.transactionHash = offrampResponse.statusData.TxHash ;
                     transaction.authorizationId = offrampResponse.orderId;
                     transaction.category = 'fiat_withdrawal';
                     transaction.channel = `bank_transfer_${fiat.toLowerCase()}`; // fiat is the target currency code from input DTO
-                    transaction.transactionModeType = 'fiat_offramp';
+                    transaction.transactionModeType = 'fiat_withdrawal';
                     transaction.tokenInfo = [{
                         chain: chainType, // from input DTO
                         blockchain: blockchainNetwork || network, // from input DTO or config
                         token: tokenSymbol, // from input DTO
                     }];
                     transaction.recipientAddress = recipientDetails.accountIdentifier;
-                    transaction.toAddress = recipientDetails.accountIdentifier;
+                    transaction.toAddress = recipientDetails.accountName + ' ' + recipientDetails.institution;
 
                     await transactionalEntityManager.save(Transaction, transaction);
                     this.logger.log(`Fiat withdrawal transaction saved for user ${userId}, order ${offrampResponse.orderId}`);

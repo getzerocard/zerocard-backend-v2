@@ -11,6 +11,7 @@ export interface Token {
   network: string;
   chainType: string;
   blockchainNetwork?: string; // Optional field to store the specific blockchain network name
+  explorerUrl?: string;
 }
 
 const logger = new Logger('TokenService');
@@ -86,6 +87,7 @@ export function getTokenBySymbol(
         gatewayAddress: '0x30f6a8457f8e42371e204a9c103f2bd42341dd0f',
         network: 'MAINET',
         blockchainNetwork: 'Base',
+        explorerUrl: 'https://basescan.org/token/',
       },
     ],
     'Base Sepolia': [
@@ -100,6 +102,7 @@ export function getTokenBySymbol(
         gatewayAddress: '0x847dfdaa218f9137229cf8424378871a1da8f625',
         network: 'TESTNET',
         blockchainNetwork: 'Base Sepolia',
+        explorerUrl: 'https://sepolia.basescan.org/token/',
       },
     ],
     'BNB Smart Chain': [
@@ -114,6 +117,7 @@ export function getTokenBySymbol(
         gatewayAddress: '0x1FA0EE7F9410F6fa49B7AD5Da72Cf01647090028',
         network: 'MAINET',
         blockchainNetwork: 'BNB Smart Chain',
+        explorerUrl: 'https://bscscan.com/token/',
       },
       {
         chainType: 'ethereum',
@@ -126,6 +130,7 @@ export function getTokenBySymbol(
         gatewayAddress: '0x1FA0EE7F9410F6fa49B7AD5Da72Cf01647090028',
         network: 'MAINET',
         blockchainNetwork: 'BNB Smart Chain',
+        explorerUrl: 'https://bscscan.com/token/',
       },
     ],
     'BNB Smart Chain Testnet': [
@@ -140,6 +145,7 @@ export function getTokenBySymbol(
         gatewayAddress: '0x0000000000000000000000000000000000000000',
         network: 'TESTNET',
         blockchainNetwork: 'BNB Smart Chain Testnet',
+        explorerUrl: 'https://testnet.bscscan.com/token/',
       },
     ],
     Solana: [
@@ -154,6 +160,7 @@ export function getTokenBySymbol(
         gatewayAddress: '0x30f6a8457f8e42371e204a9c103f2bd42341dd0f',
         network: 'MAINET',
         blockchainNetwork: 'Solana',
+        explorerUrl: 'https://solscan.io/token/',
       },
     ],
     'Solana Devnet': [
@@ -168,6 +175,7 @@ export function getTokenBySymbol(
         gatewayAddress: '0x847dfdaa218f9137229cf8424378871a1da8f625',
         network: 'TESTNET',
         blockchainNetwork: 'Solana Devnet',
+        explorerUrl: 'https://solscan.io/token/',
       },
     ],
   };
