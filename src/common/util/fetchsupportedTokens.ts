@@ -87,7 +87,7 @@ export function getTokenBySymbol(
         gatewayAddress: '0x30f6a8457f8e42371e204a9c103f2bd42341dd0f',
         network: 'MAINET',
         blockchainNetwork: 'Base',
-        explorerUrl: 'https://basescan.org/token/',
+        explorerUrl: 'https://basescan.org/tx/',
       },
     ],
     'Base Sepolia': [
@@ -102,7 +102,7 @@ export function getTokenBySymbol(
         gatewayAddress: '0x847dfdaa218f9137229cf8424378871a1da8f625',
         network: 'TESTNET',
         blockchainNetwork: 'Base Sepolia',
-        explorerUrl: 'https://sepolia.basescan.org/token/',
+        explorerUrl: 'https://sepolia.basescan.org/tx/',
       },
     ],
     'BNB Smart Chain': [

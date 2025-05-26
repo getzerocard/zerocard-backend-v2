@@ -5,10 +5,12 @@ import { Transaction } from '../../Transaction/entity/transaction.entity';
 // Assuming BlockRadarDepositSuccessEventDataDto will be made available via export/import
 // For example, by moving it to a shared DTO file or exporting from controller
 import type { BlockRadarDepositSuccessEventDataDto } from '../controllers/addressMonitoring.webhook.controller';
+import { getTokenBySymbol } from '../../../common/util/fetchsupportedTokens';
 
 export async function processDepositSuccessEvent(
     eventData: BlockRadarDepositSuccessEventDataDto,
     entityManager: EntityManager,
+    network: string,
 ): Promise<void> {
     const logger = new Logger(processDepositSuccessEvent.name);
 
@@ -40,6 +42,16 @@ export async function processDepositSuccessEvent(
         toAddress: eventData.recipientAddress,
     };
 
+    const token = getTokenBySymbol(
+        eventData.asset.symbol,
+        network,
+        eventData.blockchain.isEvmCompatible ? 'ethereum' : 'solana',
+        params.tokenInfo[0].blockchain
+    );
+
+    const explorerUrl = token?.explorerUrl;
+    // explorerUrl now contains the URL or undefined if not found
+
     logger.log(`Attempting to process deposit for userId: ${params.userId}, txHash: ${params.transactionHash}`);
 
     await entityManager.transaction(async (transactionalEntityManager) => {
@@ -62,7 +74,7 @@ export async function processDepositSuccessEvent(
         newTransaction.authorizationId = params.authorizationId;
         newTransaction.category = params.category;
         newTransaction.channel = params.channel;
-        newTransaction.transactionHash = params.transactionHash;
+        newTransaction.transactionHash = `${explorerUrl}${eventData.hash}`;
         newTransaction.transactionModeType = params.transactionModeType;
         newTransaction.tokenInfo = params.tokenInfo;
         newTransaction.recipientAddress = params.recipientAddress;

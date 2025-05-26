@@ -187,6 +187,7 @@ export interface BlockRadarWebhookPayloadDto {
 export class AddressMonitoringWebhookController {
     private readonly logger = new Logger(AddressMonitoringWebhookController.name);
     private readonly blockradarApiKey: string;
+    private readonly network: string;
 
     constructor(
         private readonly configService: ConfigService,
@@ -194,6 +195,7 @@ export class AddressMonitoringWebhookController {
         private readonly pusherService: PusherService, // Injected PusherService
         private readonly privyService: PrivyService, // Injected PrivyService
     ) {
+        this.network = this.configService.get<string>('offramp.network');
         this.blockradarApiKey = this.configService.get<string>('WALLET_API_KEY');
         if (!this.blockradarApiKey) {
             this.logger.error('BlockRadar API Key (WALLET_API_KEY) is not configured.');
@@ -273,7 +275,11 @@ export class AddressMonitoringWebhookController {
             }
 
             if (eventData.status === "SUCCESS") {
-                await processDepositSuccessEvent(eventData, this.entityManager);
+                await processDepositSuccessEvent(
+                    eventData,
+                    this.entityManager,
+                    this.network.toUpperCase()
+                );
 
                 const userIdForPusher = eventData.address?.name;
                 if (userIdForPusher) {
