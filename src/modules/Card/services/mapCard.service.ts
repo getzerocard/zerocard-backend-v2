@@ -95,7 +95,7 @@ export class MapCardService {
           },
         ],
       },
-      sendPINSMS: false,
+      sendPINSMS: true,
       customerId,
       brand: 'Verve',
       expirationDate: undefined,
