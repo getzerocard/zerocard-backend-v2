@@ -7,6 +7,7 @@ import { OrderCardService } from './services/orderCard.service';
 import { MapCardService } from './services/mapCard.service';
 import { UserModule } from '../user/user.module';
 import { CardController } from './controllers/Card.controller';
+import { SendDefaultCardPinService } from './services/sendDefaultCardPin.service';
 
 @Module({
   imports: [
@@ -16,8 +17,8 @@ import { CardController } from './controllers/Card.controller';
     TypeOrmModule.forFeature([User, PlatformDebit]),
     UserModule,
   ],
-  providers: [OrderCardService, MapCardService],
-  exports: [OrderCardService, MapCardService],
+  providers: [OrderCardService, MapCardService, SendDefaultCardPinService],
+  exports: [OrderCardService, MapCardService, SendDefaultCardPinService],
   controllers: [CardController],
 })
 export class CardModule { }

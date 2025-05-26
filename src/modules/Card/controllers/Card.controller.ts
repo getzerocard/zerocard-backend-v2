@@ -28,6 +28,8 @@ import { PrivyAuthGuard } from '../../../common/guards';
 import { resolveAndAuthorizeUserId } from "../../../common/util/auth.util";
 import { GetCardTokenInfoResponseDto, GetCardTokenInfoErrorResponses } from '../dto/get-card-token-info.dto';
 import { Trim } from '../../../common/decorators/trim.decorator';
+import { SendDefaultCardPinService } from '../services/sendDefaultCardPin.service';
+import { SendDefaultPinDataDto, SendDefaultPinErrorResponses } from '../dto/send-default-pin.dto';
 
 /**
  * Controller to handle card ordering requests
@@ -39,6 +41,7 @@ import { Trim } from '../../../common/decorators/trim.decorator';
   MapCardResponseDto,
   MappedCardDataDto,
   GetCardTokenInfoResponseDto,
+  SendDefaultPinDataDto,
 )
 export class CardController {
   private readonly logger = new Logger(CardController.name);
@@ -46,6 +49,7 @@ export class CardController {
   constructor(
     private readonly orderCardService: OrderCardService,
     private readonly mapCardService: MapCardService,
+    private readonly sendDefaultCardPinService: SendDefaultCardPinService,
   ) { }
 
   @Post(':userId/order')
@@ -221,6 +225,45 @@ export class CardController {
     const cardInfo = await this.mapCardService.getCardInfo(targetUserId);
 
     return cardInfo;
+  }
+
+  @Post(':userId/send-default-pin')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Send default PIN for a user\'s card',
+    description: "Triggers the process to send the default PIN for the user\'s mapped card. The PIN is typically sent via SMS to the user\'s registered contact information with the card provider.",
+  })
+  @ApiParam({
+    name: 'userId',
+    description: "User ID (Privy DID) or 'me' for the currently authenticated user.",
+    example: 'did:privy:user123',
+    type: String,
+  })
+  @ApiStandardResponse(SendDefaultPinDataDto)
+  @ApiResponse(SendDefaultPinErrorResponses.responses[0]) // 400
+  @ApiResponse(SendDefaultPinErrorResponses.responses[1]) // 404
+  @ApiResponse(SendDefaultPinErrorResponses.responses[2]) // 500
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized. Invalid or missing token.' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Forbidden. User lacks permission to perform this action for the target user.' })
+  async sendDefaultPin(
+    @Param('userId') @Trim() userIdParam: string,
+    @PrivyUser() authenticatedUser: PrivyUserData,
+  ): Promise<SendDefaultPinDataDto> {
+    this.logger.log(
+      `Request to send default PIN for user param: ${userIdParam}`,
+    );
+
+    const targetUserId = resolveAndAuthorizeUserId(
+      userIdParam,
+      authenticatedUser.userId,
+      'You are not authorized to send a default PIN for this user\'s card.',
+    );
+
+    this.logger.log(
+      `Authorized. Sending default PIN for resolved user ID: ${targetUserId}`,
+    );
+
+    return await this.sendDefaultCardPinService.sendDefaultPinByUserId(targetUserId);
   }
 }
 
