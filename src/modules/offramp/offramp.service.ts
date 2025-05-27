@@ -33,7 +33,7 @@ export class OfframpService {
    * @param fiat - Fiat currency code (e.g., 'NGN')
    * @param recipientDetails - Recipient information for offramp
    * @param blockchainNetwork - The specific blockchain network name (e.g., 'BNB Smart Chain', 'Base')
-   * @returns Promise<{ orderId: string; statusData: { OrderID: string; Amount: string; Token: string; Status: string; TxHash: string; Rate?: string } }> - The extracted order ID and status data from the transaction receipt.
+   * @returns Promise<{ orderId: string; statusData: { OrderID: string; Amount: string; Token: string; Status: string; TxHash: string; Rate?: string; error?: string } }> - The extracted order ID and status data from the transaction receipt.
    *
    * @example
    * const orderData = await offrampService.createOrder(
@@ -76,6 +76,7 @@ export class OfframpService {
       Status: string;
       TxHash: string;
       Rate?: string;
+      error?: string;
     };
   }> {
     try {
@@ -255,6 +256,7 @@ export class OfframpService {
         Status: string;
         TxHash: string;
         Rate?: string;
+        error?: string;
       };
 
       try {
@@ -275,31 +277,37 @@ export class OfframpService {
           chainId,
           orderId,
         );
-        this.logger.debug(
-          `Fetched order status: ${statusData.Status} for order ID: ${orderId}`,
-        );
-      } catch (error) {
-        this.logger.error(
-          `Error extracting order ID or fetching status for tx ${orderResponse.hash}:`,
-          error,
-        );
-        // Check if the error is the specific 404 from fetchOfframpOrderStatus
-        if (error instanceof Error && error.message.includes('HTTP error! status: 404')) {
-          throw new NotFoundException(
-            `Failed to retrieve offramp order details (ID: ${orderId || 'unknown'}) after creation. The order might not have registered correctly. Please try again later or contact support.`,
-          );
-        }
-        // Re-throw other errors
-        throw error;
-      }
+        this.logger.log(`Order status: ${statusData.Status}`);
 
-      return { orderId, statusData };
+        // Simply return whatever status we get without throwing
+        return { orderId, statusData };
+      } catch (error) {
+        this.logger.error(`Order status check failed: ${error}`);
+        return {
+          orderId,
+          statusData: {
+            OrderID: orderId,
+            Amount: '0',
+            Token: tokenSymbol,
+            Status: 'status_check_failed',
+            TxHash: orderResponse.hash,
+            error: error instanceof Error ? error.message : 'Unknown status check error',
+          }
+        };
+      }
     } catch (error) {
-      this.logger.error(
-        'Error creating offramp order or fetching status:',
-        error,
-      );
-      throw error;
+      this.logger.error('Order creation failed');
+      return {
+        orderId: 'failed',
+        statusData: {
+          OrderID: 'failed',
+          Amount: '0',
+          Token: tokenSymbol,
+          Status: 'creation_failed',
+          TxHash: '',
+          error: error instanceof Error ? error.message : 'Unknown creation error',
+        }
+      };
     }
   }
 }

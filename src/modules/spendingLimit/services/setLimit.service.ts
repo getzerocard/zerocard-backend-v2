@@ -15,6 +15,7 @@ import { Offramp } from '../../offramp/offramp.entity';
 import { limitBalanceCheck } from '../handlers/limitBalanceCheck.handler';
 import { PrivyService } from '../../auth/privy.service';
 import { FundsLock } from '../../Card/entity/fundsLock.entity';
+import { Decimal } from 'decimal.js';
 
 // Constants removed - will fetch from ConfigService
 // const INSTITUTION = 'KUDANGPC';
@@ -242,50 +243,92 @@ export class SetLimitService {
       );
     }
     const fxRate = toMoney(fxRateRaw);
+    const status = statusData.Status.toLowerCase();
 
-    // Proceed with setting the spending limit only if the order status is settled
     let spendingLimit: SpendingLimit | undefined;
-    if (statusData.Status.toLowerCase() === 'settled') {
-      this.logger.log(
-        `Order ${orderId} is settled, creating SpendingLimit for user ${userId}`,
-      );
-      // Use a transaction to ensure atomicity
-      spendingLimit = await this.spendingLimitRepository.manager.transaction(
-        async (transactionalEntityManager) => {
-          // Create a reference to the user
-          const userReference = { userId } as User;
-          const fxRateDecimal = fxRate;
-          const fiatAmountDecimal = multiplyMoney(
+
+    // Handle different status cases
+    switch (status) {
+      case 'validated':
+        // Always create spending limit for validated status
+        this.logger.log(`Order ${orderId} validated, creating SpendingLimit`);
+        spendingLimit = await this.createSpendingLimit(
+          userId,
+          usdAmountDecimal,
+          fxRate,
+          chainType,
+          tokenSymbol,
+          blockchainNetwork,
+          offramp,
+        );
+        break;
+
+      case 'settled':
+        // Check if spending limit already exists for this order
+        const existingLimit = await this.spendingLimitRepository.findOne({
+          where: { offramp: { orderId } },
+        });
+
+        if (!existingLimit) {
+          this.logger.log(`Order ${orderId} settled with no existing limit, creating SpendingLimit`);
+          spendingLimit = await this.createSpendingLimit(
+            userId,
             usdAmountDecimal,
-            fxRateDecimal,
+            fxRate,
+            chainType,
+            tokenSymbol,
+            blockchainNetwork,
+            offramp,
           );
-          const fiatAmount = parseFloat(formatMoney(fiatAmountDecimal));
-          const spendingLimit = transactionalEntityManager.create(
-            SpendingLimit,
-            {
-              user: userReference,
-              usdAmount: parseFloat(formatMoney(usdAmountDecimal)),
-              fxRate: parseFloat(formatMoney(fxRateDecimal)),
-              fiatAmount,
-              fiatRemaining: fiatAmount,
-              offramp: offramp,
-              chainType: chainType,
-              tokenSymbol: tokenSymbol,
-              blockchainNetwork: blockchainNetwork,
-            },
-          );
-          return await transactionalEntityManager.save(
-            SpendingLimit,
-            spendingLimit,
-          );
-        },
-      );
-    } else {
-      this.logger.log(
-        `Order ${orderId} is not settled (status: ${statusData.Status}), skipping SpendingLimit creation for user ${userId}`,
-      );
+        } else {
+          this.logger.log(`Order ${orderId} already has SpendingLimit: ${existingLimit.id}`);
+        }
+        break;
+
+      case 'refunded':
+        this.logger.log(`Order ${orderId} refunded, skipping SpendingLimit creation`);
+        // No limit creation, just update offramp status (already handled earlier)
+        break;
+
+      default:
+        this.logger.warn(`Unhandled order status: ${status} for order ${orderId}`);
     }
 
     return { spendingLimit: spendingLimit || null, statusData };
+  }
+
+  /**
+   * Helper method to create spending limit within a transaction
+   */
+  private async createSpendingLimit(
+    userId: string,
+    usdAmount: Decimal,
+    fxRate: Decimal,
+    chainType: 'ethereum' | 'solana',
+    tokenSymbol: string,
+    blockchainNetwork: string | undefined,
+    offramp: Offramp,
+  ): Promise<SpendingLimit> {
+    return this.spendingLimitRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        const userReference = { userId } as User;
+        const fiatAmountDecimal = multiplyMoney(usdAmount, fxRate);
+        const fiatAmount = parseFloat(formatMoney(fiatAmountDecimal));
+
+        const spendingLimit = transactionalEntityManager.create(SpendingLimit, {
+          user: userReference,
+          usdAmount: parseFloat(formatMoney(usdAmount)),
+          fxRate: parseFloat(formatMoney(fxRate)),
+          fiatAmount,
+          fiatRemaining: fiatAmount,
+          offramp,
+          chainType,
+          tokenSymbol,
+          blockchainNetwork,
+        });
+
+        return transactionalEntityManager.save(SpendingLimit, spendingLimit);
+      }
+    );
   }
 }
