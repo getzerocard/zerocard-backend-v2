@@ -75,13 +75,7 @@ export async function fetchOfframpOrderStatus(
     }
 
     const maxRetries = 5; // Maximum number of retry attempts if status is pending
-    const retryIntervalMs = 10000; // Retry every 2 seconds
-
-    // Add a 1-second delay before the first attempt to allow for aggregator processing
-    logger.log(
-      `Waiting 1 second before first attempt to fetch status for order ${orderId}`,
-    );
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const retryIntervalMs = 5000; // Retry every 10 seconds
 
     const finalStates = ['validated', 'settled', 'refunded'];
     const retryStates = ['pending', 'fulfilled']; // States that allow retries
@@ -154,7 +148,6 @@ export async function fetchOfframpOrderStatus(
         // Only retry if in retryable state and attempts remain
         if (retryStates.includes(statusLower) && attempt < maxRetries) {
           logger.log(`Order status is ${statusLower}, retrying after ${retryIntervalMs}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
-          logger.debug(`Full aggregator response for order ${orderId}:\n${JSON.stringify(data, null, 2)}`);
           await new Promise(resolve => setTimeout(resolve, retryIntervalMs));
           continue;
         }
