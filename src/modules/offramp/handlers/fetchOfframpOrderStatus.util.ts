@@ -63,7 +63,7 @@ export async function fetchOfframpOrderStatus(
     }
 
     const maxRetries = 5; // Maximum number of retry attempts if status is pending
-    const retryIntervalMs = 4000; // Retry every 2 seconds
+    const retryIntervalMs = 10000; // Retry every 2 seconds
 
     // Add a 1-second delay before the first attempt to allow for aggregator processing
     logger.log(
