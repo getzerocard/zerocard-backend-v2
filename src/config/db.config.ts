@@ -12,7 +12,7 @@ export const databaseConfig = (): TypeOrmModuleOptions => {
       url: process.env.DATABASE_URL,
       autoLoadEntities: true,
       synchronize: false, // ❌ Disable this in production
-      migrationsRun: false, // ✅ Automatically run migrations on startup
+      migrationsRun: true, // ✅ Automatically run migrations on startup
       migrations: [__dirname + '/../migrations/*{.ts,.js}'], // Migration path
       logging: true,
       extra: {
