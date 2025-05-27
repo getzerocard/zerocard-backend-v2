@@ -154,6 +154,7 @@ export async function fetchOfframpOrderStatus(
         // Only retry if in retryable state and attempts remain
         if (retryStates.includes(statusLower) && attempt < maxRetries) {
           logger.log(`Order status is ${statusLower}, retrying after ${retryIntervalMs}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
+          logger.debug(`Full aggregator response for order ${orderId}:\n${JSON.stringify(data, null, 2)}`);
           await new Promise(resolve => setTimeout(resolve, retryIntervalMs));
           continue;
         }

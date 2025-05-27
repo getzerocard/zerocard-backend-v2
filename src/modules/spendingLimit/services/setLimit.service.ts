@@ -251,16 +251,23 @@ export class SetLimitService {
     switch (status) {
       case 'validated':
         // Always create spending limit for validated status
-        this.logger.log(`Order ${orderId} validated, creating SpendingLimit`);
-        spendingLimit = await this.createSpendingLimit(
-          userId,
-          usdAmountDecimal,
-          fxRate,
-          chainType,
-          tokenSymbol,
-          blockchainNetwork,
-          offramp,
-        );
+        this.logger.log(`Order ${orderId} validated, attempting to create SpendingLimit`);
+        if (fxRateRaw === 0) {
+          this.logger.error(
+            `Order ${orderId} is validated but fxRate is 0. Skipping SpendingLimit creation. Aggregator might not have provided rate.`,
+          );
+          spendingLimit = undefined;
+        } else {
+          spendingLimit = await this.createSpendingLimit(
+            userId,
+            usdAmountDecimal,
+            fxRate,
+            chainType,
+            tokenSymbol,
+            blockchainNetwork,
+            offramp,
+          );
+        }
         break;
 
       case 'settled':
