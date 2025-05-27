@@ -2,13 +2,13 @@ import { formatMoney, toMoney } from '../../../common/util/money';
 
 /**
  * Calculates the weighted average rate from an array of settlements.
- * @param settlements - Array of settlement objects with Rate and OrderPercent properties.
+ * @param settlements - Array of settlement objects with rate and orderPercent properties.
  * @returns string - The formatted weighted average rate, or an empty string if calculation is not possible.
  */
 export function calculateWeightedRate(
   settlements: Array<{
-    Rate?: string;
-    OrderPercent?: number;
+    rate?: string;
+    orderPercent?: string;
     [key: string]: any;
   }>,
 ): string {
@@ -16,8 +16,8 @@ export function calculateWeightedRate(
     return '';
   }
 
-  if (settlements.length === 1 && settlements[0].Rate) {
-    return settlements[0].Rate;
+  if (settlements.length === 1 && settlements[0].rate) {
+    return settlements[0].rate;
   }
 
   if (settlements.length > 1) {
