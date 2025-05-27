@@ -75,7 +75,7 @@ export async function fetchOfframpOrderStatus(
     }
 
     const maxRetries = 23; // Set to 23 attempts for approximately 45 seconds of polling
-    const retryIntervalMs = 2000; // Retry every 2 seconds
+    const retryIntervalMs = 6500; // Retry every 2 seconds
 
     const finalStates = ['settled', 'refunded', 'validated'];
     const retryStates = ['pending', 'fulfilled', 'processing']; // States that allow retries
