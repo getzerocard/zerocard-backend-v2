@@ -75,7 +75,7 @@ export async function fetchOfframpOrderStatus(
     }
 
     const maxRetries = 7; // Maximum number of retry attempts if status is pending
-    const retryIntervalMs = 15000; // Retry every 15 seconds
+    const retryIntervalMs = 10000; // Retry every 15 seconds
 
     const finalStates = ['validated', 'settled', 'refunded'];
     const retryStates = ['pending', 'fulfilled']; // States that allow retries
