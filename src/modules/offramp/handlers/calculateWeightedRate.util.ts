@@ -24,9 +24,9 @@ export function calculateWeightedRate(
     let totalWeightedRate = toMoney(0);
     let totalPercent = toMoney(0);
     settlements.forEach((settlement) => {
-      if (settlement.Rate && settlement.OrderPercent) {
-        const rate = toMoney(settlement.Rate);
-        const percent = toMoney(settlement.OrderPercent);
+      if (settlement.rate && settlement.orderPercent) {
+        const rate = toMoney(settlement.rate);
+        const percent = toMoney(settlement.orderPercent);
         totalWeightedRate = totalWeightedRate.plus(rate.mul(percent));
         totalPercent = totalPercent.plus(percent);
       }
