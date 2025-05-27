@@ -27,8 +27,11 @@ interface OrderStatusData {
 }
 
 interface OrderStatusResponse {
-  data: OrderStatusData;
-  // Add other top-level fields if they exist
+  data?: OrderStatusData;
+  error?: {
+    status: number;
+    message: string;
+  };
 }
 
 /**
@@ -44,7 +47,7 @@ interface OrderStatusResponse {
  * // Returns: { OrderID: 'order123', Amount: '100.00', Token: 'ETH', Status: 'settled', TxHash: '0xabcdef123456...', Rate: '1.05' }
  */
 export async function fetchOfframpOrderStatus(
-  aggregatorUrl: string, // Pass aggregatorUrl directly
+  aggregatorUrl: string,
   chainId: string,
   orderId: string,
 ): Promise<{
@@ -54,8 +57,17 @@ export async function fetchOfframpOrderStatus(
   Status: string;
   TxHash: string;
   Rate?: string;
+  error?: string;
 }> {
-  // Outer try-catch for any unexpected errors within the function's scope
+  const defaultResponse = {
+    OrderID: orderId,
+    Amount: '0',
+    Token: '',
+    Status: 'pending',
+    TxHash: '',
+    Rate: '0',
+  };
+
   try {
     if (!aggregatorUrl) {
       // This check is fine here, it's a precondition.
@@ -71,6 +83,9 @@ export async function fetchOfframpOrderStatus(
     );
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
+    const finalStates = ['validated', 'settled', 'refunded'];
+    const retryStates = ['pending', 'fulfilled']; // States that allow retries
+
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         // Set a timeout of 3 seconds for the fetch request
@@ -85,30 +100,24 @@ export async function fetchOfframpOrderStatus(
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-          const errorBody = await response.text(); // Try to get more error details
-          logger.error(
-            `HTTP error fetching order status (attempt ${attempt + 1}/${maxRetries + 1}): ${response.status} - ${response.statusText}. Body: ${errorBody}`,
-          );
-          // For non-retryable HTTP errors (e.g., 400-range errors excluding 404), throw immediately without retrying
-          if (
-            response.status >= 400 &&
-            response.status < 500 &&
-            response.status !== 404
-          ) {
-            throw new Error(
-              `Non-retryable HTTP error! status: ${response.status}`,
-            );
-          }
-          throw new Error(`HTTP error! status: ${response.status}`);
+          const errorBody = await response.text();
+          logger.error(`HTTP error for order ${orderId}: ${response.status}`);
+          return {
+            ...defaultResponse,
+            Status: 'api_error',
+            error: `HTTP ${response.status}: ${errorBody}`,
+          };
         }
 
         const data: OrderStatusResponse = await response.json();
-        if (!data || !data.data) {
-          logger.error(
-            'Invalid response structure received from aggregator',
-            data,
-          );
-          throw new Error('Invalid response structure from aggregator');
+
+        if (!data?.data) {
+          logger.warn(`Invalid response structure for order ${orderId}`);
+          return {
+            ...defaultResponse,
+            Status: 'invalid_response',
+            error: 'Invalid API response structure',
+          };
         }
 
         // Extract specific fields as requested
@@ -127,21 +136,11 @@ export async function fetchOfframpOrderStatus(
           extractedData.Rate = calculateWeightedRate(data.data.settlements);
         }
 
-        // Handle status cases for retry logic only
         const statusLower = data.data.status.toLowerCase();
-        if (statusLower === 'pending' && attempt < maxRetries) {
-          // If pending and not at max retries, log and retry after 2 seconds
-          logger.log(
-            `Order status is ${data.data.status}, retrying after 2 seconds for order ${orderId} (attempt ${attempt + 1}/${maxRetries + 1})`,
-          );
-          await new Promise((resolve) => setTimeout(resolve, retryIntervalMs)); // Wait for 2 seconds
-        } else {
-          // Return the data structure if status is not pending or if max retries reached while pending
-          if (statusLower === 'pending') {
-            logger.log(
-              `Max retries reached for order ${orderId}. Status remains ${data.data.status}.`,
-            );
-          }
+
+        // Check if we've reached a terminal state
+        if (finalStates.includes(statusLower)) {
+          logger.log(`Order ${orderId} reached final state: ${statusLower}`);
           return {
             OrderID: extractedData.OrderID,
             Amount: extractedData.Amount,
@@ -151,35 +150,49 @@ export async function fetchOfframpOrderStatus(
             Rate: extractedData.Rate,
           };
         }
+
+        // Only retry if in retryable state and attempts remain
+        if (retryStates.includes(statusLower) && attempt < maxRetries) {
+          logger.log(`Order status is ${statusLower}, retrying after ${retryIntervalMs}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
+          await new Promise(resolve => setTimeout(resolve, retryIntervalMs));
+          continue;
+        }
+
+        // If not final state and no retries left, return current status
+        logger.log(`Max retries reached for order ${orderId} with non-final status: ${statusLower}`);
+        return {
+          OrderID: extractedData.OrderID,
+          Amount: extractedData.Amount,
+          Token: extractedData.Token,
+          Status: extractedData.Status,
+          TxHash: extractedData.TxHash,
+          Rate: extractedData.Rate,
+        };
+
       } catch (error) {
-        logger.error(
-          `Error fetching offramp order status for order ${orderId} on chain ${chainId} (attempt ${attempt + 1}/${maxRetries + 1}):`,
-          error,
-        );
-        // If this is the last attempt, re-throw the error; otherwise, check if retryable
+        logger.error(`Attempt ${attempt + 1} failed for order ${orderId}`);
         if (attempt === maxRetries) {
-          throw error;
+          return {
+            ...defaultResponse,
+            Status: 'retry_failed',
+            error: error instanceof Error ? error.message : 'Unknown error',
+          };
         }
-        // Check if error is non-retryable (e.g., specific HTTP errors already thrown as non-retryable)
-        if (error instanceof Error && error.message.includes('Non-retryable')) {
-          throw error; // Stop retrying immediately for non-retryable errors
-        }
-        await new Promise((resolve) => setTimeout(resolve, retryIntervalMs)); // Wait before retrying on error
+        await new Promise(resolve => setTimeout(resolve, retryIntervalMs));
       }
     }
 
-    // This line should theoretically never be reached due to the logic above, but added for safety
-    throw new Error(
-      'Unexpected error: Max retries logic failed to return a response or throw earlier.',
-    );
+    return {
+      ...defaultResponse,
+      Status: 'max_retries',
+      error: 'Max polling attempts reached',
+    };
   } catch (finalError) {
-    // This outer catch will grab anything that escaped the inner loop's handling
-    // or errors from the setup/final throw.
-    logger.error(
-      `Critical failure in fetchOfframpOrderStatus for order ${orderId} on chain ${chainId}:`,
-      finalError,
-    );
-    // Re-throw the error to be handled by the caller
-    throw finalError;
+    logger.error(`Final error for order ${orderId}`);
+    return {
+      ...defaultResponse,
+      Status: 'critical_error',
+      error: finalError instanceof Error ? finalError.message : 'Unknown critical error',
+    };
   }
 }
