@@ -74,8 +74,8 @@ export async function fetchOfframpOrderStatus(
       throw new Error('Aggregator URL is required');
     }
 
-    const maxRetries = 7; // Maximum number of retry attempts if status is pending
-    const retryIntervalMs = 10000; // Retry every 15 seconds
+    const maxRetries = 23; // Set to 23 attempts for approximately 45 seconds of polling
+    const retryIntervalMs = 2000; // Retry every 2 seconds
 
     const finalStates = ['settled', 'refunded', 'validated'];
     const retryStates = ['pending', 'fulfilled', 'processing']; // States that allow retries
@@ -88,7 +88,7 @@ export async function fetchOfframpOrderStatus(
 
         const requestUrl = `${aggregatorUrl}/orders/${chainId}/${orderId}`;
         logger.debug(
-          `[FetchOfframpOrderStatus] Attempt ${attempt + 1}/${maxRetries + 1} - Fetching order status from URL: ${requestUrl}`,
+          `[FetchOfframpOrderStatus] Attempt ${attempt + 1}/${maxRetries} - Fetching order status from URL: ${requestUrl}`,
         );
 
         const response = await fetch(requestUrl, { signal: controller.signal });
@@ -98,12 +98,13 @@ export async function fetchOfframpOrderStatus(
         if (!response.ok) {
           const errorBody = await response.text();
           logger.error(
-            `[FetchOfframpOrderStatus] HTTP error for order ${orderId} (attempt ${attempt + 1}/${maxRetries + 1}) - Status: ${response.status}, Body: ${errorBody}`,
+            `[FetchOfframpOrderStatus] HTTP error for order ${orderId} (attempt ${attempt + 1}/${maxRetries}) - Status: ${response.status}, Body: ${errorBody}`,
           );
           throw new Error(`HTTP ${response.status}: ${errorBody}`);
         }
 
         const data: OrderStatusResponse = await response.json();
+        logger.debug(`[FetchOfframpOrderStatus] Attempt ${attempt + 1}/${maxRetries} - Full response data for order ${orderId}: ${JSON.stringify(data, null, 2)}`);
 
         if (!data?.data) {
           logger.warn(`Invalid response structure for order ${orderId}`);
@@ -127,7 +128,10 @@ export async function fetchOfframpOrderStatus(
 
         // Calculate rate if settlements exist, regardless of status
         if (data.data.settlements && Array.isArray(data.data.settlements)) {
-          extractedData.Rate = calculateWeightedRate(data.data.settlements);
+          logger.debug(`[FetchOfframpOrderStatus] Settlements array for order ${orderId}: ${JSON.stringify(data.data.settlements, null, 2)}`);
+          const calculatedRate = calculateWeightedRate(data.data.settlements);
+          logger.debug(`[FetchOfframpOrderStatus] Calculated rate for order ${orderId}: ${JSON.stringify(calculatedRate)}`);
+          extractedData.Rate = calculatedRate;
         }
 
         const statusLower = data.data.status.toLowerCase();
