@@ -77,10 +77,10 @@ export async function fetchOfframpOrderStatus(
     const maxRetries = 7; // Maximum number of retry attempts if status is pending
     const retryIntervalMs = 10000; // Retry every 15 seconds
 
-    const finalStates = ['validated', 'settled', 'refunded'];
-    const retryStates = ['pending', 'fulfilled']; // States that allow retries
+    const finalStates = ['settled', 'refunded', 'validated'];
+    const retryStates = ['pending', 'fulfilled', 'processing']; // States that allow retries
 
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
         // Set a timeout of 3 seconds for the fetch request
         const controller = new AbortController();
@@ -146,8 +146,8 @@ export async function fetchOfframpOrderStatus(
         }
 
         // Only retry if in retryable state and attempts remain
-        if (retryStates.includes(statusLower) && attempt < maxRetries) {
-          logger.log(`Order status is ${statusLower}, retrying after ${retryIntervalMs}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
+        if (retryStates.includes(statusLower)) {
+          logger.log(`Retrying (${attempt + 1}/${maxRetries})...`);
           await new Promise(resolve => setTimeout(resolve, retryIntervalMs));
           continue;
         }
@@ -164,8 +164,7 @@ export async function fetchOfframpOrderStatus(
         };
 
       } catch (error) {
-        logger.error(`Attempt ${attempt + 1} failed for order ${orderId}`);
-        if (attempt === maxRetries) {
+        if (attempt === maxRetries - 1) {
           return {
             ...defaultResponse,
             Status: 'retry_failed',
