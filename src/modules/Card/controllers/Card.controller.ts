@@ -9,8 +9,8 @@ import { PrivyUser } from '../../auth/decorators/privy-user.decorator';
 import { PrivyUserData } from '../../auth/interfaces/privy-user.interface';
 import { MapCardService } from '../services/mapCard.service';
 import {
-  MapCardResponseDto,
-  MappedCardDataDto,
+  MapCardServiceDataDto,
+  ProviderCardDataDto,
   MapCardSuccess,
   MapCardErrors,
 } from '../dto/mapCard.dto';
@@ -38,8 +38,8 @@ import { SendDefaultPinDataDto, SendDefaultPinErrorResponses } from '../dto/send
 @ApiExtraModels(
   Response,
   OrderCardResponseDto,
-  MapCardResponseDto,
-  MappedCardDataDto,
+  MapCardServiceDataDto,
+  ProviderCardDataDto,
   GetCardTokenInfoResponseDto,
   SendDefaultPinDataDto,
 )
@@ -131,10 +131,11 @@ export class CardController {
     description:
       'Maps a card to the specified user. All parameters must be provided as query parameters.',
   })
-  @ApiStandardResponse(MapCardResponseDto, 'Card mapped successfully')
+  @ApiStandardResponse(MapCardServiceDataDto, 'Card mapped successfully')
   @ApiResponse(MapCardErrors.R400)
   @ApiResponse(MapCardErrors.R403)
   @ApiResponse(MapCardErrors.R404)
+  @ApiResponse(MapCardErrors.R409)
   @ApiResponse(MapCardErrors.R500)
   @ApiQuery({
     name: 'userId',
@@ -170,7 +171,7 @@ export class CardController {
     @Query('status') @Trim() status: string,
     @Query('expirationDate') @Trim() expirationDate: string,
     @Query('number') @Trim() number: string,
-  ): Promise<MapCardResponseDto> {
+  ): Promise<MapCardServiceDataDto> {
     const targetUserId = resolveAndAuthorizeUserId(
       userIdQuery,
       authenticatedUser.userId,
@@ -231,7 +232,7 @@ export class CardController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Send default PIN for a user\'s card',
-    description: "Triggers the process to send the default PIN for the user\'s mapped card. The PIN is typically sent via SMS to the user\'s registered contact information with the card provider.",
+    description: "Triggers the process to send the default PIN for the user\'s mapped card. The PIN is typically sent via SMS to the user's registered contact information with the card provider.",
   })
   @ApiParam({
     name: 'userId',

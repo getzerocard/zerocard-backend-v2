@@ -202,7 +202,7 @@ export class MapCardService {
 
       return {
         status: 'success',
-        message: response.message || 'Card mapped successfully.',
+        message: 'Card mapped successfully.',
         data: response.data,
       };
     } catch (error) {

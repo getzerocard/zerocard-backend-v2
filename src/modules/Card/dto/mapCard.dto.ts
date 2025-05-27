@@ -4,9 +4,14 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsBoolean,
+  ValidateNested,
+  IsArray,
 } from 'class-validator';
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath, ApiPropertyOptional } from '@nestjs/swagger';
 import { Response } from '../../../common/interceptors/response.interceptor';
+import { HttpStatus } from '@nestjs/common';
+import { Type } from 'class-transformer';
 
 /**
  * Conceptual Input DTO for mapping a card (parameters are via @Query).
@@ -40,45 +45,182 @@ export class MapCardInputDto {
   number: string;
 }
 
-/**
- * Response DTO for the data field of a successful card mapping.
- * Note: The service currently returns { status: string, message: string, data: any }
- * This DTO will represent the 'data' part if it were structured, or be 'any' if truly variable.
- * For now, assuming the 'data' from service is the actual card details.
- */
-export class MappedCardDataDto {
-  @ApiProperty({ example: 'card_123abc456def' })
-  _id: string;
+// Sub-DTOs for ProviderCardDataDto
+class ProviderCardMetadataDto {
+  @ApiProperty({ example: 'did:privy:cm94fwojw01yri50l74zvnkr5' })
+  @IsString()
+  user_id: string;
+}
 
-  @ApiProperty({ example: 'NGN' })
-  currency: string;
+class ProviderCardSpendingControlsChannelsDto {
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  atm: boolean;
 
-  @ApiProperty({ example: 'active' })
-  status: string;
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  pos: boolean;
+
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  web: boolean;
+
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  mobile: boolean;
+}
+
+class ProviderCardSpendingControlsLimitDto {
+  @ApiProperty({ example: 100000000 })
+  @IsNumber()
+  amount: number;
+
+  @ApiProperty({ example: 'daily' })
+  @IsString()
+  interval: string;
+
+  @ApiPropertyOptional({ type: [String], example: [] })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  categories?: string[];
+}
+
+class ProviderCardSpendingControlsDto {
+  @ApiProperty()
+  @ValidateNested()
+  @Type(() => ProviderCardSpendingControlsChannelsDto)
+  channels: ProviderCardSpendingControlsChannelsDto;
+
+  @ApiProperty({ type: [String], example: ['3835', '3412'] })
+  @IsArray()
+  @IsString({ each: true })
+  allowedCategories: string[];
+
+  @ApiProperty({ type: [String], example: ['zerocard'] })
+  @IsArray()
+  @IsString({ each: true })
+  blockedCategories: string[];
+
+  @ApiProperty({ type: [ProviderCardSpendingControlsLimitDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProviderCardSpendingControlsLimitDto)
+  spendingLimits: ProviderCardSpendingControlsLimitDto[];
 }
 
 /**
- * Main Response DTO for the /map endpoint's successful response data wrapper.
- * The service currently returns an object with status, message, and data.
- * This will be the structure of the 'data' field in the ResponseInterceptor's output.
+ * Represents the detailed card data from the provider.
+ * This is the innermost 'data' object in the successful response.
  */
-export class MapCardResponseDto {
-  @ApiProperty({ description: 'Status of the operation', example: 'success' })
+export class ProviderCardDataDto {
+  @ApiProperty({ example: '67ee7a73730ffcefbcdb7c8d' })
+  @IsString()
+  business: string;
+
+  @ApiProperty({ example: '68260692331a6186aac89441' })
+  @IsString()
+  customer: string;
+
+  @ApiProperty({ example: '68359f38cb8e3c2f03c42824' })
+  @IsString()
+  account: string;
+
+  @ApiProperty({ example: '67ee7a73730ffcefbcdb7c94' })
+  @IsString()
+  fundingSource: string;
+
+  @ApiProperty({ example: 'physical' })
+  @IsString()
+  type: string;
+
+  @ApiProperty({ example: 'Verve' })
+  @IsString()
+  brand: string;
+
+  @ApiProperty({ example: 'NGN' })
+  @IsString()
+  currency: string;
+
+  @ApiProperty({ example: '506321*********5494' })
+  @IsString()
+  maskedPan: string;
+
+  @ApiProperty({ example: '05' })
+  @IsString()
+  expiryMonth: string;
+
+  @ApiProperty({ example: '2028' })
+  @IsString()
+  expiryYear: string;
+
+  @ApiProperty()
+  @ValidateNested()
+  @Type(() => ProviderCardMetadataDto)
+  metadata: ProviderCardMetadataDto;
+
+  @ApiProperty({ example: 'active' })
+  @IsString()
+  status: string;
+
+  @ApiProperty()
+  @ValidateNested()
+  @Type(() => ProviderCardSpendingControlsDto)
+  spendingControls: ProviderCardSpendingControlsDto;
+
+  @ApiProperty({ example: false })
+  @IsBoolean()
+  is2FAEnrolled: boolean;
+
+  @ApiProperty({ example: false })
+  @IsBoolean()
+  isDigitalized: boolean;
+
+  @ApiProperty({ example: false })
+  @IsBoolean()
+  isDeleted: boolean;
+
+  @ApiProperty({ example: '2025-05-27T11:17:13.009Z' })
+  @IsDateString()
+  createdAt: string;
+
+  @ApiProperty({ example: '2025-05-27T11:17:13.009Z' })
+  @IsDateString()
+  updatedAt: string;
+
+  @ApiProperty({ example: '68359f39cb8e3c2f03c42826' })
+  @IsString()
+  _id: string;
+
+  @ApiProperty({ example: 0 })
+  @IsNumber()
+  __v: number;
+}
+
+/**
+ * Represents the actual data structure returned by the mapCardService.mapCard method.
+ * This is what the controller's mapCard method will return, and it will be
+ * placed inside the 'data' field of the standard ResponseInterceptor wrapper.
+ */
+export class MapCardServiceDataDto {
+  @ApiProperty({ description: 'Status of the service operation', example: 'success' })
   @IsString()
   status: string;
 
   @ApiProperty({
-    description: 'Message about the operation',
-    example: 'Card mapped successfully',
+    description: 'Message from the service operation',
+    example: 'Card mapped successfully.',
   })
   @IsString()
   message: string;
 
   @ApiProperty({
-    description: 'Data related to the mapped card',
-    type: MappedCardDataDto,
+    description: 'Detailed card data from the provider',
+    type: ProviderCardDataDto,
   })
-  data: MappedCardDataDto;
+  @ValidateNested()
+  @Type(() => ProviderCardDataDto)
+  data: ProviderCardDataDto;
 }
 
 // Success Response Definition for Swagger
@@ -88,10 +230,10 @@ export class MapCardSuccess {
     description: 'Card mapped successfully to the user.',
     schema: {
       allOf: [
-        { $ref: getSchemaPath(Response) },
+        { $ref: getSchemaPath(Response) }, // This is the outer {statusCode, success, message, data}
         {
           properties: {
-            data: { $ref: getSchemaPath(MapCardResponseDto) },
+            data: { $ref: getSchemaPath(MapCardServiceDataDto) }, // MapCardServiceDataDto goes into the 'data' field
           },
         },
       ],
@@ -99,18 +241,52 @@ export class MapCardSuccess {
     examples: {
       success: {
         summary: 'Successful Card Mapping',
-        value: {
+        value: { // This is the full final response structure
           statusCode: 200,
           success: true,
-          data: {
+          message: 'Operation successful', // Interceptor's message
+          data: { // This is an instance of MapCardServiceDataDto
             status: 'success',
-            message: 'Card mapped successfully',
-            data: {
-              _id: 'card_8Jg7YhN2kXsLpQwR',
-              currency: 'NGN',
-              status: 'active',
-            },
-          },
+            message: 'Card mapped successfully.',
+            data: { // This is an instance of ProviderCardDataDto
+              business: "67ee7a73730ffcefbcdb7c8d",
+              customer: "68260692331a6186aac89441",
+              account: "68359f38cb8e3c2f03c42824",
+              fundingSource: "67ee7a73730ffcefbcdb7c94",
+              type: "physical",
+              brand: "Verve",
+              currency: "NGN",
+              maskedPan: "506321*********5494",
+              expiryMonth: "05",
+              expiryYear: "2028",
+              metadata: {
+                user_id: "did:privy:cm94fwojw01yri50l74zvnkr5"
+              },
+              status: "active",
+              spendingControls: {
+                channels: {
+                  atm: true,
+                  pos: true,
+                  web: true,
+                  mobile: true
+                },
+                allowedCategories: ["3835", "3412"], // Truncated for brevity in example
+                blockedCategories: ["zerocard"],
+                spendingLimits: [{
+                  amount: 100000000,
+                  interval: "daily",
+                  categories: []
+                }]
+              },
+              is2FAEnrolled: false,
+              isDigitalized: false,
+              isDeleted: false,
+              createdAt: "2025-05-27T11:17:13.009Z",
+              updatedAt: "2025-05-27T11:17:13.009Z",
+              _id: "68359f39cb8e3c2f03c42826",
+              __v: 0
+            }
+          }
         },
       },
     },
@@ -223,6 +399,31 @@ export class MapCardErrors {
           statusCode: 500,
           success: false,
           message: 'An unexpected error occurred during card mapping. Please try again later or contact support.',
+        },
+      },
+    },
+  };
+
+  static readonly R409 = {
+    status: 409,
+    description: 'Conflict - Card already linked to user',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(Response) },
+        {
+          properties: {
+            message: { type: 'string' },
+          },
+        },
+      ],
+    },
+    examples: {
+      cardConflict: {
+        summary: 'Card Already Linked',
+        value: {
+          statusCode: 409,
+          success: false,
+          message: 'Card Protocol: Card already linked to this user profile.',
         },
       },
     },
