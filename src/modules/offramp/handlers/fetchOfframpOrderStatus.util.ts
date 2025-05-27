@@ -74,8 +74,8 @@ export async function fetchOfframpOrderStatus(
       throw new Error('Aggregator URL is required');
     }
 
-    const maxRetries = 5; // Maximum number of retry attempts if status is pending
-    const retryIntervalMs = 5000; // Retry every 10 seconds
+    const maxRetries = 7; // Maximum number of retry attempts if status is pending
+    const retryIntervalMs = 10000; // Retry every 15 seconds
 
     const finalStates = ['validated', 'settled', 'refunded'];
     const retryStates = ['pending', 'fulfilled']; // States that allow retries
@@ -86,21 +86,21 @@ export async function fetchOfframpOrderStatus(
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-        const response = await fetch(
-          `${aggregatorUrl}/orders/${chainId}/${orderId}`,
-          { signal: controller.signal },
+        const requestUrl = `${aggregatorUrl}/orders/${chainId}/${orderId}`;
+        logger.debug(
+          `[FetchOfframpOrderStatus] Attempt ${attempt + 1}/${maxRetries + 1} - Fetching order status from URL: ${requestUrl}`,
         );
+
+        const response = await fetch(requestUrl, { signal: controller.signal });
 
         clearTimeout(timeoutId);
 
         if (!response.ok) {
           const errorBody = await response.text();
-          logger.error(`HTTP error for order ${orderId}: ${response.status}`);
-          return {
-            ...defaultResponse,
-            Status: 'api_error',
-            error: `HTTP ${response.status}: ${errorBody}`,
-          };
+          logger.error(
+            `[FetchOfframpOrderStatus] HTTP error for order ${orderId} (attempt ${attempt + 1}/${maxRetries + 1}) - Status: ${response.status}, Body: ${errorBody}`,
+          );
+          throw new Error(`HTTP ${response.status}: ${errorBody}`);
         }
 
         const data: OrderStatusResponse = await response.json();
