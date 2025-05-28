@@ -12,6 +12,7 @@ import { getTokenBalance } from '../../common/util/getTokenBalance';
 import { fetchInstitutionsByFiatCode } from './handlers/getInstitutions.handler';
 import { FiatWithdrawalDto } from './dto/fiat-withdrawal.dto';
 import { verifyBankAccount } from './handlers/verifyBankAccount.handler';
+import { saveFiatWithdrawal } from './handlers/saveFiatWithdrwal.handler';
 
 @Injectable()
 export class FiatWithdrawalService {
@@ -145,54 +146,81 @@ export class FiatWithdrawalService {
 
             // If the withdrawal is immediately settled, save the transaction record.
             // If it\'s pending, it might be handled by a webhook or subsequent status check.
-            if (offrampResponse.statusData && offrampResponse.statusData.Status && offrampResponse.statusData.Status.toLowerCase() === 'settled') {
-                this.logger.log(`Offramp order ${offrampResponse.orderId} settled for user ${userId}. Saving transaction.`);
-
-                // Prepare transaction data from the direct response of createOrder
-                const tokenAmountUSD = parseFloat(offrampResponse.statusData.Amount) || 0; // This is the amount in token (e.g., USDC)
-                // Assuming Rate is already in the correct decimal format (e.g., 1500 means 1500)
-                const fxRateRaw = offrampResponse.statusData.Rate ? parseFloat(offrampResponse.statusData.Rate) : 0;
-
-                // Calculate the destination fiat amount based on the token amount and FX rate
-                // This will be stored in the `fiatAmount` field of the Transaction entity for now.
-                let calculatedDestinationfiatAmount: number | null = null;
-                if (fxRateRaw > 0) {
-                    calculatedDestinationfiatAmount = parseFloat((tokenAmountUSD * fxRateRaw).toFixed(2));
+            if (offrampResponse.statusData && offrampResponse.statusData.Status) {
+                const status = offrampResponse.statusData.Status.toLowerCase();
+                switch (status) {
+                    case 'validated':
+                        this.logger.log(`Offramp order ${offrampResponse.orderId} validated for user ${userId}. Saving transaction as completed.`);
+                        try {
+                            await this.transactionRepository.manager.transaction(async (transactionalEntityManager) => {
+                                await saveFiatWithdrawal(
+                                    transactionalEntityManager,
+                                    user,
+                                    offrampResponse,
+                                    fiat,
+                                    chainType,
+                                    blockchainNetwork,
+                                    network,
+                                    tokenSymbol,
+                                    recipientDetails,
+                                    'completed'
+                                );
+                                this.logger.log(`Transaction saved successfully for validated order ${offrampResponse.orderId}`);
+                            });
+                        } catch (error) {
+                            this.logger.error(`Failed to save transaction for validated order ${offrampResponse.orderId}: ${error instanceof Error ? error.message : String(error)}`);
+                        }
+                        break;
+                    case 'settled':
+                        const existingTransaction = await this.transactionRepository.findOne({ where: { authorizationId: offrampResponse.orderId } });
+                        if (!existingTransaction) {
+                            this.logger.log(`Offramp order ${offrampResponse.orderId} settled for user ${userId} and not found in database. Saving transaction.`);
+                            await this.transactionRepository.manager.transaction(async (transactionalEntityManager) => {
+                                await saveFiatWithdrawal(
+                                    transactionalEntityManager,
+                                    user,
+                                    offrampResponse,
+                                    fiat,
+                                    chainType,
+                                    blockchainNetwork,
+                                    network,
+                                    tokenSymbol,
+                                    recipientDetails,
+                                    'completed'
+                                );
+                                this.logger.log(`Transaction saved successfully for settled order ${offrampResponse.orderId}`);
+                            });
+                        } else {
+                            this.logger.log(`Offramp order ${offrampResponse.orderId} already exists in database for user ${userId}. Skipping save.`);
+                        }
+                        break;
+                    case 'refunded':
+                        try {
+                            await this.transactionRepository.manager.transaction(async (transactionalEntityManager) => {
+                                await saveFiatWithdrawal(
+                                    transactionalEntityManager,
+                                    user,
+                                    offrampResponse,
+                                    fiat,
+                                    chainType,
+                                    blockchainNetwork,
+                                    network,
+                                    tokenSymbol,
+                                    recipientDetails,
+                                    'refund'
+                                );
+                                this.logger.log(`Transaction saved successfully for refunded order ${offrampResponse.orderId}`);
+                            });
+                        } catch (error) {
+                            this.logger.error(`Failed to save transaction for refunded order ${offrampResponse.orderId}: ${error instanceof Error ? error.message : String(error)}`);
+                        }
+                        throw new BadRequestException('Withdrawal failed');
+                        break;
+                    default:
+                        this.logger.warn(`Unhandled order status: ${status} for order ${offrampResponse.orderId}`);
                 }
-
-                await this.transactionRepository.manager.transaction(async (transactionalEntityManager) => {
-                    const transaction = new Transaction();
-                    transaction.user = user;
-                    transaction.usdAmount = tokenAmountUSD; // Amount in USD (or stablecoin equivalent)
-                    transaction.fiatAmount = calculatedDestinationfiatAmount; // Calculated destination fiat amount (e.g., NGN, CFA)
-                    transaction.fiatCode = fiat; // Set fiatCode from DTO input
-                    transaction.effectiveFxRate = fxRateRaw > 0 ? fxRateRaw : null;
-                    transaction.type = 'withdrawal';
-                    transaction.status = 'completed'; // Since statusData.Status is 'settled'
-                    transaction.cardId = null;
-                    transaction.transactionReference = offrampResponse.statusData.TxHash || offrampResponse.orderId;
-                    transaction.merchantName = 'Zero Card';
-                    transaction.merchantId = 'zero_card';
-                    transaction.state = null;
-                    transaction.city = null;
-                    transaction.transactionHash = offrampResponse.statusData.TxHash ;
-                    transaction.authorizationId = offrampResponse.orderId;
-                    transaction.category = 'fiat_withdrawal';
-                    transaction.channel = `bank_transfer_${fiat.toLowerCase()}`; // fiat is the target currency code from input DTO
-                    transaction.transactionModeType = 'fiat_withdrawal';
-                    transaction.tokenInfo = [{
-                        chain: chainType, // from input DTO
-                        blockchain: blockchainNetwork || network, // from input DTO or config
-                        token: tokenSymbol, // from input DTO
-                    }];
-                    transaction.recipientAddress = recipientDetails.accountIdentifier;
-                    transaction.toAddress = recipientDetails.accountName + ' ' + recipientDetails.institution;
-
-                    await transactionalEntityManager.save(Transaction, transaction);
-                    this.logger.log(`Fiat withdrawal transaction saved for user ${userId}, order ${offrampResponse.orderId}`);
-                });
             } else {
-                this.logger.log(`Offramp order ${offrampResponse.orderId} for user ${userId} has status: ${offrampResponse.statusData?.Status}. Not saving transaction record yet.`);
+                this.logger.warn(`No status data returned for order ${offrampResponse.orderId}`);
             }
 
             return offrampResponse; // Return the original offramp response
@@ -276,3 +304,4 @@ export class FiatWithdrawalService {
         }
     }
 }
+

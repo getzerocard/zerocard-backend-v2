@@ -205,18 +205,15 @@ export class AddressMonitoringWebhookController {
     @Post('blockradar')
     async handleBlockRadarWebhook(
         @Headers('x-blockradar-signature') signature: string,
-        @Req() req: RawBodyRequest<Request>, // Requires rawBody: true in main.ts or specific middleware
+        @Req() req: RawBodyRequest<Request>,
         @Res() res: Response,
-        @Body() payload: BlockRadarWebhookPayloadDto, // Use the new DTO for the payload
+        @Body() payload: BlockRadarWebhookPayloadDto,
     ) {
-        this.logger.log('Received BlockRadar webhook.'); // General log for any incoming webhook
+        this.logger.log('Received BlockRadar webhook.');
 
         if (payload.event !== 'deposit.success') {
-            // No specific logging for non-deposit.success events, just acknowledge.
             return res.status(HttpStatus.OK).send('Webhook acknowledged.');
         }
-
-        // All subsequent logic is now only for deposit.success events
 
         if (!this.blockradarApiKey) {
             this.logger.error('Cannot verify BlockRadar webhook (deposit.success): API key is not configured.');
@@ -275,62 +272,60 @@ export class AddressMonitoringWebhookController {
             }
 
             if (eventData.status === "SUCCESS") {
-                await processDepositSuccessEvent(
-                    eventData,
-                    this.entityManager,
-                    this.network.toUpperCase()
-                );
-
-                const userIdForPusher = eventData.address?.name;
-                if (userIdForPusher) {
-                    try {
-                        const actualChainType = eventData.blockchain.isEvmCompatible ? "ethereum" : "solana";
-
-                        // Fetch the specific wallet for the determined chain type
-                        const wallets = await this.privyService.getWalletId(userIdForPusher, actualChainType);
-
-                        // Ensure we use the recipientAddress from the event data if it matches one of the user's wallets for that chain.
-                        // This is more reliable than just picking the first wallet if the user has multiple wallets of the same chain type linked.
-                        const targetWallet = wallets.find(w => w.address.toLowerCase() === eventData.recipientAddress.toLowerCase());
-
-                        if (targetWallet && targetWallet.address) {
-                            const walletAddressForChannel = targetWallet.address; // Use the matched recipient address
-                            // Construct channel name with chainType: private-<chainType>-<walletAddress>
-                            const pusherChannel = `private-${actualChainType}-${walletAddressForChannel}`;
-                            const pusherEvent = 'deposit-update';
-                            const pusherPayload = {
-                                tokenSymbol: eventData.asset.symbol,
-                                type: eventData.type,
-                                blockchainNetwork: eventData.blockchain.slug, // e.g., "base", "solana-mainnet"
-                                chainType: actualChainType, // "ethereum" or "solana"
-                                status: eventData.status,
-                                hash: eventData.hash,
-                                senderAddress: eventData.senderAddress,
-                                recipientAddress: eventData.recipientAddress,
-                                amount: eventData.amount,
-                            };
-
-                            this.logger.log(`Attempting to send Pusher event to channel ${pusherChannel} for event ${pusherEvent}`);
-                            await this.pusherService.trigger(pusherChannel, pusherEvent, pusherPayload);
-                            this.logger.log(`Pusher event sent successfully to channel ${pusherChannel}.`);
-                        } else {
-                            this.logger.warn(`Could not send Pusher event for deposit.success: No matching ${actualChainType} wallet address found in Privy for user ${userIdForPusher} that matches recipient ${eventData.recipientAddress}.`);
+                // Start both operations concurrently but wait for database save to ensure atomicity
+                const processPromise = processDepositSuccessEvent(eventData, this.entityManager, this.network.toUpperCase());
+                const pusherPromise = (async () => {
+                    const userIdForPusher = eventData.address?.name;
+                    if (userIdForPusher) {
+                        try {
+                            const actualChainType = eventData.blockchain.isEvmCompatible ? "ethereum" : "solana";
+                            const wallets = await this.privyService.getWalletId(userIdForPusher, actualChainType);
+                            const targetWallet = wallets.find(w => w.address.toLowerCase() === eventData.recipientAddress.toLowerCase());
+                            if (targetWallet && targetWallet.address) {
+                                const pusherChannel = `private-${actualChainType}-${targetWallet.address}`;
+                                const pusherEvent = 'deposit-update';
+                                const pusherPayload = {
+                                    tokenSymbol: eventData.asset.symbol,
+                                    type: eventData.type,
+                                    blockchainNetwork: eventData.blockchain.slug,
+                                    chainType: actualChainType,
+                                    status: eventData.status,
+                                    hash: eventData.hash,
+                                    senderAddress: eventData.senderAddress,
+                                    recipientAddress: eventData.recipientAddress,
+                                    amount: eventData.amount,
+                                };
+                                await this.pusherService.trigger(pusherChannel, pusherEvent, pusherPayload);
+                                this.logger.log(`Pusher event sent successfully to channel ${pusherChannel}.`);
+                            } else {
+                                this.logger.warn(`No matching ${actualChainType} wallet address found in Privy for user ${userIdForPusher}.`);
+                            }
+                        } catch (privyOrPusherError: any) {
+                            this.logger.error(`Error during Privy wallet fetch or Pusher event trigger: ${privyOrPusherError.message}`);
                         }
-                    } catch (privyOrPusherError: any) {
-                        this.logger.error(`Error during Privy wallet fetch or Pusher event trigger for deposit.success: ${privyOrPusherError.message}`, privyOrPusherError.stack);
+                    } else {
+                        this.logger.warn('User ID not available for Pusher event.');
                     }
-                } else {
-                    this.logger.warn('Could not send Pusher event for deposit.success: User ID (address.name) not available in eventData.');
-                }
+                })();
+
+                // Wait only for the database operation to ensure atomicity before responding
+                await processPromise;
+                this.logger.log('Database save completed for deposit.success event.');
+
+                // Let Pusher run in background if not done yet, but don't wait for it
+                pusherPromise.catch(error => {
+                    this.logger.error(`Background Pusher error: ${error instanceof Error ? error.message : String(error)}`);
+                });
+
                 return res.status(HttpStatus.OK).send('Webhook processed and transaction created (deposit.success).');
             } else {
-                this.logger.log(`Deposit event received with non-SUCCESS status: ${eventData.status}. Transaction not created.`);
-                return res.status(HttpStatus.OK).send('Webhook processed, non-SUCCESS status for deposit (deposit.success).');
+                this.logger.log(`Deposit event received with non-SUCCESS status: ${eventData.status}.`);
+                return res.status(HttpStatus.OK).send('Webhook processed, non-SUCCESS status for deposit.');
             }
         } catch (error: unknown) {
             const { message: errorMessage, stack: errorStack } = extractErrorDetails(error);
             this.logger.error(`Error during BlockRadar webhook processing (deposit.success): ${errorMessage}`, errorStack);
-            if (error instanceof NotFoundException) { // Handle user not found specifically
+            if (error instanceof NotFoundException) {
                 return res.status(HttpStatus.NOT_FOUND).send(errorMessage || 'User not found during transaction processing (deposit.success).');
             }
             if (error instanceof UnauthorizedException) {

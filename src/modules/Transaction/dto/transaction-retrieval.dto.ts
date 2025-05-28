@@ -39,14 +39,14 @@ export class GetTransactionsInputDto {
   limit: number = 10;
 
   @ApiProperty({
-    description: 'Optional transaction type to filter (spending or withdrawal)',
+    description: 'Optional transaction type to filter (spending, withdrawal, or deposit)',
     required: false,
-    enum: ['spending', 'withdrawal'],
+    enum: ['spending', 'withdrawal', 'deposit'],
     example: 'spending',
   })
   @IsOptional()
-  @IsEnum(['spending', 'withdrawal'])
-  type?: 'spending' | 'withdrawal';
+  @IsEnum(['spending', 'withdrawal', 'deposit'])
+  type?: 'spending' | 'withdrawal' | 'deposit';
 
   @ApiProperty({
     description: 'Optional minimum USD amount to filter transactions',
@@ -108,7 +108,7 @@ export class TransactionResponseDto {
   effectiveRate?: number;
 
   @ApiProperty({ description: 'Fiat code for the transaction', required: false })
-  fiatCode?: string;  
+  fiatCode?: string;
 
   @ApiProperty({
     description: 'Channel through which the transaction was made',

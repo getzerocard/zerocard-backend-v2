@@ -13,6 +13,7 @@ export async function processDepositSuccessEvent(
     network: string,
 ): Promise<void> {
     const logger = new Logger(processDepositSuccessEvent.name);
+    logger.log(`Received deposit event data: ${JSON.stringify(eventData, null, 2)}`);
 
     const params = {
         userId: eventData.address.name,
@@ -50,6 +51,7 @@ export async function processDepositSuccessEvent(
     );
 
     const explorerUrl = token?.explorerUrl;
+    logger.log(`Token lookup result - Symbol: ${eventData.asset.symbol}, Explorer URL: ${explorerUrl || 'undefined'}`);
     // explorerUrl now contains the URL or undefined if not found
 
     logger.log(`Attempting to process deposit for userId: ${params.userId}, txHash: ${params.transactionHash}`);
