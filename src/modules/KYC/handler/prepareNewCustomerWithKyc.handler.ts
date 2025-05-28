@@ -5,6 +5,10 @@ import type { CreateCustomerResponse } from '../../Card/infrastructureHandlers/c
 import { createCustomer } from '../../Card/infrastructureHandlers/createCustomer.handler';
 import { convertToDatabaseDateFormat } from '../../../common/util/dateFormat.util';
 
+enum CountryCode {
+  NIGERIA = '+234',
+}
+
 /**
  * Prepares and creates a new customer using KYC data for ZeroCard API
  * @param userRepository The repository to fetch user data
@@ -39,7 +43,7 @@ export async function prepareNewCustomerWithKyc(
       type: 'individual',
       status: 'active',
       name: name,
-      phoneNumber: user.phoneNumber,
+      phoneNumber: user.phoneNumber.startsWith('0') ? CountryCode.NIGERIA + user.phoneNumber.slice(1) : user.phoneNumber,
       emailAddress: user.email,
       billingAddress: {
         line1: user.shippingAddress?.street,
