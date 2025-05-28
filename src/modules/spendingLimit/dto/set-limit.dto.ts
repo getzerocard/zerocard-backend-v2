@@ -145,7 +145,7 @@ export class SetSpendingLimitSuccessResponse {
 export class SetSpendingLimitErrorResponses {
   static readonly R400 = {
     status: 400,
-    description: 'Invalid data provided',
+    description: 'Invalid data provided or operation failed',
     schema: {
       allOf: [
         { $ref: getSchemaPath(Response) },
@@ -153,7 +153,7 @@ export class SetSpendingLimitErrorResponses {
           properties: {
             message: {
               type: 'string',
-              example: 'Invalid data provided. USD amount must be at least 1.',
+              example: 'Invalid data provided. USD amount must be at least 1.'
             },
           },
         },
@@ -165,7 +165,15 @@ export class SetSpendingLimitErrorResponses {
         value: {
           statusCode: 400,
           success: false,
-          message: 'Invalid data provided. USD amount must be at least 1.',
+          message: 'Invalid data provided. USD amount must be at least 1.'
+        },
+      },
+      refundedFailure: {
+        summary: 'Order Refunded Failure',
+        value: {
+          statusCode: 400,
+          success: false,
+          message: 'Setting limit failed'
         },
       },
     },

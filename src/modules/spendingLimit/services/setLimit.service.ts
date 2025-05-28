@@ -294,7 +294,7 @@ export class SetLimitService {
 
       case 'refunded':
         this.logger.log(`Order ${orderId} refunded, skipping SpendingLimit creation`);
-        // No limit creation, just update offramp status (already handled earlier)
+        throw new BadRequestException('Setting limit failed');
         break;
 
       default:
