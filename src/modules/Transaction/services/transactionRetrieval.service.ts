@@ -48,7 +48,7 @@ export class TransactionRetrievalService {
    * @param userId - The user ID to filter transactions.
    * @param page - Page number for pagination, defaults to 1.
    * @param limit - Number of transactions per page, defaults to 10.
-   * @param type - Optional transaction type to filter, either 'spending' or 'withdrawal'.
+   * @param type - Optional transaction type to filter, either 'spending', 'withdrawal', or 'deposit'.
    * @param minUsdAmount - Optional minimum USD amount to filter transactions.
    * @param maxUsdAmount - Optional maximum USD amount to filter transactions.
    * @returns A Promise resolving to an array of TransactionResponse objects.
@@ -58,7 +58,7 @@ export class TransactionRetrievalService {
     userId: string,
     page: number = 1,
     limit: number = 10,
-    type?: 'spending' | 'withdrawal',
+    type?: 'spending' | 'withdrawal' | 'deposit',
     minUsdAmount?: number,
     maxUsdAmount?: number,
   ): Promise<TransactionResponse[]> {

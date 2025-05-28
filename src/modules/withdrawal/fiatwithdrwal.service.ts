@@ -12,7 +12,7 @@ import { getTokenBalance } from '../../common/util/getTokenBalance';
 import { fetchInstitutionsByFiatCode } from './handlers/getInstitutions.handler';
 import { FiatWithdrawalDto } from './dto/fiat-withdrawal.dto';
 import { verifyBankAccount } from './handlers/verifyBankAccount.handler';
-import { SaveFiatWithdrawalHandler } from './handlers/saveFiatWithdrwal.handler';
+import { saveFiatWithdrawal } from './handlers/saveFiatWithdrwal.handler';
 
 @Injectable()
 export class FiatWithdrawalService {
@@ -28,7 +28,6 @@ export class FiatWithdrawalService {
         private readonly fundsLockRepository: Repository<FundsLock>,
         @InjectRepository(Transaction)
         private readonly transactionRepository: Repository<Transaction>,
-        private readonly saveFiatWithdrawalHandler: SaveFiatWithdrawalHandler
     ) { }
 
     /**
@@ -152,27 +151,9 @@ export class FiatWithdrawalService {
                 switch (status) {
                     case 'validated':
                         this.logger.log(`Offramp order ${offrampResponse.orderId} validated for user ${userId}. Saving transaction as completed.`);
-                        await this.transactionRepository.manager.transaction(async (transactionalEntityManager) => {
-                            await this.saveFiatWithdrawalHandler.saveFiatWithdrawal(
-                                transactionalEntityManager,
-                                user,
-                                offrampResponse,
-                                fiat,
-                                chainType,
-                                blockchainNetwork,
-                                network,
-                                tokenSymbol,
-                                recipientDetails,
-                                'completed'
-                            );
-                        });
-                        break;
-                    case 'settled':
-                        const existingTransaction = await this.transactionRepository.findOne({ where: { authorizationId: offrampResponse.orderId } });
-                        if (!existingTransaction) {
-                            this.logger.log(`Offramp order ${offrampResponse.orderId} settled for user ${userId} and not found in database. Saving transaction.`);
+                        try {
                             await this.transactionRepository.manager.transaction(async (transactionalEntityManager) => {
-                                await this.saveFiatWithdrawalHandler.saveFiatWithdrawal(
+                                await saveFiatWithdrawal(
                                     transactionalEntityManager,
                                     user,
                                     offrampResponse,
@@ -184,27 +165,55 @@ export class FiatWithdrawalService {
                                     recipientDetails,
                                     'completed'
                                 );
+                                this.logger.log(`Transaction saved successfully for validated order ${offrampResponse.orderId}`);
+                            });
+                        } catch (error) {
+                            this.logger.error(`Failed to save transaction for validated order ${offrampResponse.orderId}: ${error instanceof Error ? error.message : String(error)}`);
+                        }
+                        break;
+                    case 'settled':
+                        const existingTransaction = await this.transactionRepository.findOne({ where: { authorizationId: offrampResponse.orderId } });
+                        if (!existingTransaction) {
+                            this.logger.log(`Offramp order ${offrampResponse.orderId} settled for user ${userId} and not found in database. Saving transaction.`);
+                            await this.transactionRepository.manager.transaction(async (transactionalEntityManager) => {
+                                await saveFiatWithdrawal(
+                                    transactionalEntityManager,
+                                    user,
+                                    offrampResponse,
+                                    fiat,
+                                    chainType,
+                                    blockchainNetwork,
+                                    network,
+                                    tokenSymbol,
+                                    recipientDetails,
+                                    'completed'
+                                );
+                                this.logger.log(`Transaction saved successfully for settled order ${offrampResponse.orderId}`);
                             });
                         } else {
                             this.logger.log(`Offramp order ${offrampResponse.orderId} already exists in database for user ${userId}. Skipping save.`);
                         }
                         break;
                     case 'refunded':
-                        this.logger.log(`Offramp order ${offrampResponse.orderId} refunded for user ${userId}. Saving transaction as refund.`);
-                        await this.transactionRepository.manager.transaction(async (transactionalEntityManager) => {
-                            await this.saveFiatWithdrawalHandler.saveFiatWithdrawal(
-                                transactionalEntityManager,
-                                user,
-                                offrampResponse,
-                                fiat,
-                                chainType,
-                                blockchainNetwork,
-                                network,
-                                tokenSymbol,
-                                recipientDetails,
-                                'refund'
-                            );
-                        });
+                        try {
+                            await this.transactionRepository.manager.transaction(async (transactionalEntityManager) => {
+                                await saveFiatWithdrawal(
+                                    transactionalEntityManager,
+                                    user,
+                                    offrampResponse,
+                                    fiat,
+                                    chainType,
+                                    blockchainNetwork,
+                                    network,
+                                    tokenSymbol,
+                                    recipientDetails,
+                                    'refund'
+                                );
+                                this.logger.log(`Transaction saved successfully for refunded order ${offrampResponse.orderId}`);
+                            });
+                        } catch (error) {
+                            this.logger.error(`Failed to save transaction for refunded order ${offrampResponse.orderId}: ${error instanceof Error ? error.message : String(error)}`);
+                        }
                         throw new BadRequestException('Withdrawal failed');
                         break;
                     default:

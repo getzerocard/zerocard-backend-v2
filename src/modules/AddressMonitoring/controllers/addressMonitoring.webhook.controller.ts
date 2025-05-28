@@ -205,18 +205,15 @@ export class AddressMonitoringWebhookController {
     @Post('blockradar')
     async handleBlockRadarWebhook(
         @Headers('x-blockradar-signature') signature: string,
-        @Req() req: RawBodyRequest<Request>, // Requires rawBody: true in main.ts or specific middleware
+        @Req() req: RawBodyRequest<Request>,
         @Res() res: Response,
-        @Body() payload: BlockRadarWebhookPayloadDto, // Use the new DTO for the payload
+        @Body() payload: BlockRadarWebhookPayloadDto,
     ) {
-        this.logger.log('Received BlockRadar webhook.'); // General log for any incoming webhook
+        this.logger.log('Received BlockRadar webhook.');
 
         if (payload.event !== 'deposit.success') {
-            // No specific logging for non-deposit.success events, just acknowledge.
             return res.status(HttpStatus.OK).send('Webhook acknowledged.');
         }
-
-        // All subsequent logic is now only for deposit.success events
 
         if (!this.blockradarApiKey) {
             this.logger.error('Cannot verify BlockRadar webhook (deposit.success): API key is not configured.');
@@ -275,6 +272,7 @@ export class AddressMonitoringWebhookController {
             }
 
             if (eventData.status === "SUCCESS") {
+                // Start both operations concurrently but wait for database save to ensure atomicity
                 const processPromise = processDepositSuccessEvent(eventData, this.entityManager, this.network.toUpperCase());
                 const pusherPromise = (async () => {
                     const userIdForPusher = eventData.address?.name;
@@ -310,7 +308,14 @@ export class AddressMonitoringWebhookController {
                     }
                 })();
 
-                await Promise.all([processPromise, pusherPromise]);
+                // Wait only for the database operation to ensure atomicity before responding
+                await processPromise;
+                this.logger.log('Database save completed for deposit.success event.');
+
+                // Let Pusher run in background if not done yet, but don't wait for it
+                pusherPromise.catch(error => {
+                    this.logger.error(`Background Pusher error: ${error instanceof Error ? error.message : String(error)}`);
+                });
 
                 return res.status(HttpStatus.OK).send('Webhook processed and transaction created (deposit.success).');
             } else {
@@ -320,7 +325,7 @@ export class AddressMonitoringWebhookController {
         } catch (error: unknown) {
             const { message: errorMessage, stack: errorStack } = extractErrorDetails(error);
             this.logger.error(`Error during BlockRadar webhook processing (deposit.success): ${errorMessage}`, errorStack);
-            if (error instanceof NotFoundException) { // Handle user not found specifically
+            if (error instanceof NotFoundException) {
                 return res.status(HttpStatus.NOT_FOUND).send(errorMessage || 'User not found during transaction processing (deposit.success).');
             }
             if (error instanceof UnauthorizedException) {
