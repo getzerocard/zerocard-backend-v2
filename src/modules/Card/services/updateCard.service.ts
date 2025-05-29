@@ -24,7 +24,7 @@ export class UpdateCardService {
      * @param dailyLimitAmount - The daily spending limit amount for the card (optional).
      * @param statusNotProvided - Flag indicating if status was not provided in the request.
      * @param dailyLimitNotProvided - Flag indicating if daily limit was not provided in the request.
-     * @returns Promise<UpdateCardResponseDto> - The response DTO with status code, message, and updated data.
+     * @returns Promise<any> - The core data of the updated card.
      * @throws NotFoundException if the user or card ID is not found.
      * @throws InternalServerErrorException if the update operation fails.
      * @throws BadRequestException if neither status nor daily limit is provided.
@@ -35,7 +35,7 @@ export class UpdateCardService {
         dailyLimitAmount: number,
         statusNotProvided: boolean = false,
         dailyLimitNotProvided: boolean = false
-    ): Promise<UpdateCardResponseDto> {
+    ): Promise<any> {
         this.logger.log(`Updating card details for user ${userId} with status ${status || 'not provided'} and daily limit ${dailyLimitAmount || 'not provided'}`);
 
         if (statusNotProvided && dailyLimitNotProvided) {
@@ -95,11 +95,7 @@ export class UpdateCardService {
             );
 
             this.logger.log(`Successfully updated card details for user ${userId}, card ID ${cardId}`);
-            return {
-                statusCode: 200,
-                message: 'Card updated successfully',
-                data: updateResponse,
-            };
+            return updateResponse.data; // Return only the core data, following the pattern in orderCard.service.ts
         } catch (error) {
             this.logger.error(`Failed to update card for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
             throw new InternalServerErrorException(`Failed to update card: ${error instanceof Error ? error.message : 'Unknown error'}`);
