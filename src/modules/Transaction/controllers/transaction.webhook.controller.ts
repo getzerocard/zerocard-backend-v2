@@ -81,6 +81,7 @@ export class TransactionWebhookController {
     @Body() body: any,
     @Headers('authorization') authHeader?: string,
   ): Promise<WebhookProcessedDataDto> {
+    this.logger.log(`Incoming webhook received: ${JSON.stringify(body)}`);
     if (!authHeader) {
       this.logger.warn('Missing authorization header for webhook.');
       throw new ForbiddenException('Missing authorization header');
@@ -124,28 +125,21 @@ export class TransactionWebhookController {
         }
       } else {
         // Mainnet/Production logic
-        if (eventType === 'authorization.request') {
-          result =
-            await this.processTransactionService.handleAuthorizationRequest(
-              body.data,
-            );
+        if (eventType === 'transaction.created') {
+          result = await this.processTransactionService.handleTransactionCreated(body.data);
+          message = 'Transaction processed successfully';
+        } else if (eventType === 'authorization.request') {
+          result = await this.processTransactionService.handleAuthorizationRequest(body.data);
           message = 'Authorization request processed successfully';
         } else if (eventType === 'authorization.updated') {
-          result =
-            await this.processTransactionService.handleAuthorizationUpdated(
-              body.data,
-            );
+          result = await this.processTransactionService.handleAuthorizationUpdated(body.data);
           message = 'Transaction status updated to completed';
         } else if (eventType === 'transaction.refund') {
-          result = await this.processTransactionService.handleTransactionRefund(
-            body.data,
-          );
+          result = await this.processTransactionService.handleTransactionRefund(body.data);
           message = 'Transaction status updated to refunded';
         } else {
           this.logger.warn(`Unsupported webhook type: ${eventType || 'unknown'}`);
-          throw new BadRequestException(
-            `Unsupported webhook type: ${eventType || 'unknown'}`,
-          );
+          throw new BadRequestException(`Unsupported webhook type: ${eventType || 'unknown'}`);
         }
       }
 

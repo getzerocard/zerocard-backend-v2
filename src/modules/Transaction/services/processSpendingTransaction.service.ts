@@ -148,7 +148,7 @@ export class ProcessTransactionService {
       authorizationData.category,
       authorizationData.channel,
       authorizationData.transactionModeType,
-      'pending',
+      'completed',
     );
     return {
       transactionId: transaction.authorizationId,
