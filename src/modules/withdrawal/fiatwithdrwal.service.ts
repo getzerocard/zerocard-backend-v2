@@ -13,6 +13,7 @@ import { fetchInstitutionsByFiatCode } from './handlers/getInstitutions.handler'
 import { FiatWithdrawalDto } from './dto/fiat-withdrawal.dto';
 import { verifyBankAccount } from './handlers/verifyBankAccount.handler';
 import { saveFiatWithdrawal } from './handlers/saveFiatWithdrwal.handler';
+import { fetchTokenRateHandler } from './handlers/fetchTokenRate.handler';
 
 @Injectable()
 export class FiatWithdrawalService {
@@ -301,6 +302,44 @@ export class FiatWithdrawalService {
                 throw error;
             }
             throw new InternalServerErrorException(`Failed to fetch banks for fiat code ${fiatCode}: ${error.message}`);
+        }
+    }
+
+    /**
+     * Fetches the token rate for a given token amount and fiat currency.
+     * @param symbol - Cryptocurrency token (e.g., 'USDT')
+     * @param amount - Amount of the token
+     * @param fiat - Fiat currency code (e.g., 'NGN')
+     * @returns Promise<{ rate: string; amount: string }> - Object containing the rate and the original amount
+     * @throws InternalServerErrorException if the aggregator URL is not configured or if rate fetching fails
+     */
+    async fetchTokenRate(
+        symbol: string,
+        amount: string,
+        fiat: string,
+    ): Promise<{ rate: string; amount: string }> {
+        this.logger.log(`Service request to fetch token rate for ${symbol} amount ${amount} to ${fiat}`);
+
+        const aggregatorUrl = this.configService.get<string>('aggregator.url');
+        if (!aggregatorUrl) {
+            this.logger.error('Aggregator URL is not configured for token rate fetching.');
+            throw new InternalServerErrorException('Configuration error: Aggregator URL is not set.');
+        }
+
+        try {
+            if (!symbol || !amount || !fiat) {
+                throw new BadRequestException('Symbol, amount, and fiat currency are required.');
+            }
+
+            const rateData = await fetchTokenRateHandler(aggregatorUrl, symbol, amount, fiat);
+            this.logger.log(`Token rate fetched successfully for ${symbol} to ${fiat}: ${rateData.rate}`);
+            return rateData;
+        } catch (error: any) {
+            this.logger.error(`Service error during token rate fetching for ${symbol} to ${fiat}: ${error.message}`, error.stack);
+            if (error instanceof HttpException || error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new InternalServerErrorException(`Service failed to fetch token rate: ${error.message || 'Unknown internal error'}`);
         }
     }
 }

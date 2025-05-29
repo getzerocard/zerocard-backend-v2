@@ -27,6 +27,7 @@ import { FiatWithdrawalDto, FiatWithdrawalResponseDto, FiatWithdrawalErrorRespon
 import { BankListResponseDto, GetBankListErrorResponses } from './dto/bank-list.dto';
 import { FiatWithdrawalService } from './fiatwithdrwal.service';
 import { VerifyAccountDto, VerifyAccountResponseDataDto, VerifyAccountErrorResponses } from './dto/verify-account.dto';
+import { TokenRateResponseDto, TokenRateErrorResponses } from './dto/token-rate.dto';
 
 
 /**
@@ -239,5 +240,33 @@ export class WithdrawalController {
       accountName,
       message: 'Account verified successfully'
     };
+  }
+
+  /**
+   * Fetch the current rate for a specific token to fiat currency conversion.
+   * @param symbol - Cryptocurrency token symbol (e.g., USDT)
+   * @param amount - Amount of the token
+   * @param fiat - Fiat currency code (e.g., NGN)
+   * @returns Object containing the rate and the original amount
+   */
+  @Get('rate')
+  @ApiOperation({
+    summary: 'Get token to fiat conversion rate',
+    description: 'Fetch the current conversion rate for a specific token amount to fiat currency.',
+  })
+  @ApiQuery({ name: 'symbol', type: String, required: true, example: 'USDT', description: 'Cryptocurrency token symbol' })
+  @ApiQuery({ name: 'amount', type: String, required: true, example: '1', description: 'Amount of the token' })
+  @ApiQuery({ name: 'fiat', type: String, required: true, example: 'NGN', description: 'Fiat currency code' })
+  @ApiStandardResponse(TokenRateResponseDto, 'Token rate fetched successfully')
+  @ApiResponse(TokenRateErrorResponses.R400_BAD_REQUEST)
+  @ApiResponse(TokenRateErrorResponses.R500_INTERNAL_SERVER_ERROR)
+  async getTokenRate(
+    @Query('symbol') symbol: string,
+    @Query('amount') amount: string,
+    @Query('fiat') fiat: string,
+  ): Promise<TokenRateResponseDto> {
+    this.logger.log(`Fetching token rate for ${symbol} amount ${amount} to ${fiat}`);
+    const rateData = await this.fiatWithdrawalService.fetchTokenRate(symbol, amount, fiat);
+    return rateData;
   }
 }
