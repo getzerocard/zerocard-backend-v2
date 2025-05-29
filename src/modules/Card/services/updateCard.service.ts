@@ -76,8 +76,8 @@ export class UpdateCardService {
                         pos: true,
                         atm: true,
                     },
-                    blockedCategories: ['zerocard'],
-                    allowedCategories: allowedCategories,
+                    blockedCategories: [],
+                    allowedCategories: [],
                     spendingLimits: [
                         {
                             interval: 'daily',
