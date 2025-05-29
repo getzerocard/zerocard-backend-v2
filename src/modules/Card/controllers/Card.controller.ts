@@ -32,6 +32,8 @@ import { SendDefaultCardPinService } from '../services/sendDefaultCardPin.servic
 import { SendDefaultPinDataDto, SendDefaultPinErrorResponses } from '../dto/send-default-pin.dto';
 import { UpdateCardService } from '../services/updateCard.service';
 import { UpdateCardRequestDto, UpdateCardResponseDto, UpdateCardErrorResponses } from '../dto/update-card.dto';
+import { GetCardService } from '../services/getCard.service';
+import { GetCardDetailsResponseDto, GetCardDetailsErrorResponses } from '../dto/get-card-details.dto';
 
 /**
  * Controller to handle card ordering requests
@@ -44,6 +46,7 @@ import { UpdateCardRequestDto, UpdateCardResponseDto, UpdateCardErrorResponses }
   ProviderCardDataDto,
   GetCardTokenInfoResponseDto,
   SendDefaultPinDataDto,
+  GetCardDetailsResponseDto
 )
 export class CardController {
   private readonly logger = new Logger(CardController.name);
@@ -53,6 +56,7 @@ export class CardController {
     private readonly mapCardService: MapCardService,
     private readonly sendDefaultCardPinService: SendDefaultCardPinService,
     private readonly updateCardService: UpdateCardService,
+    private readonly getCardService: GetCardService,
   ) { }
 
   @Post(':userId/order')
@@ -341,6 +345,42 @@ export class CardController {
       dailyLimitAmountNumber === undefined
     );
     return result;
+  }
+
+  @Get(':userId/details')
+  @ApiOperation({
+    summary: "Get details of a user's card",
+    description: "Retrieves the detailed information of the card associated with the specified user.",
+  })
+  @ApiParam({
+    name: 'userId',
+    description: 'User ID (Privy DID) or \'me\' for the currently authenticated user.',
+    example: 'did:privy:user123',
+    type: String,
+  })
+  @ApiStandardResponse(GetCardDetailsResponseDto)
+  @ApiResponse(GetCardDetailsErrorResponses.responses[0])
+  @ApiResponse(GetCardDetailsErrorResponses.responses[1])
+  @ApiResponse(GetCardDetailsErrorResponses.responses[2])
+  @ApiResponse(GetCardDetailsErrorResponses.responses[3])
+  @ApiResponse(GetCardDetailsErrorResponses.responses[4])
+  async getCardDetails(
+    @Param('userId') @Trim() userIdParam: string,
+    @PrivyUser() authenticatedUser: PrivyUserData,
+  ): Promise<any> {
+    this.logger.log(`Request to get card details for user param: ${userIdParam}`);
+
+    const targetUserId = resolveAndAuthorizeUserId(
+      userIdParam,
+      authenticatedUser.userId,
+      'Cannot fetch card details for another user.',
+    );
+
+    this.logger.log(`Authorized. Fetching card details for resolved user ID: ${targetUserId}`);
+
+    const cardDetails = await this.getCardService.getCardDetails(targetUserId);
+
+    return cardDetails;
   }
 }
 
