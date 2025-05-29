@@ -8,17 +8,19 @@ import { MapCardService } from './services/mapCard.service';
 import { UserModule } from '../user/user.module';
 import { CardController } from './controllers/Card.controller';
 import { SendDefaultCardPinService } from './services/sendDefaultCardPin.service';
+import { UpdateCardService } from './services/updateCard.service';
+import { FundsLock } from './entity/fundsLock.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forFeature([User, PlatformDebit]),
+    TypeOrmModule.forFeature([User, PlatformDebit, FundsLock]),
     UserModule,
   ],
-  providers: [OrderCardService, MapCardService, SendDefaultCardPinService],
-  exports: [OrderCardService, MapCardService, SendDefaultCardPinService],
+  providers: [OrderCardService, MapCardService, SendDefaultCardPinService, UpdateCardService],
+  exports: [OrderCardService, MapCardService, SendDefaultCardPinService, UpdateCardService],
   controllers: [CardController],
 })
 export class CardModule { }

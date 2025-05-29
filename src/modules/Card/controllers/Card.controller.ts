@@ -1,4 +1,4 @@
-import { HttpCode, HttpStatus, Post, Query, Get, Param, UseGuards, Logger, BadRequestException } from '@nestjs/common';
+import { HttpCode, HttpStatus, Post, Query, Get, Param, UseGuards, Logger, BadRequestException, Body, ValidationPipe, Patch } from '@nestjs/common';
 import { OrderCardService } from '../services/orderCard.service';
 import {
   OrderCardResponseDto,
@@ -30,6 +30,8 @@ import { GetCardTokenInfoResponseDto, GetCardTokenInfoErrorResponses } from '../
 import { Trim } from '../../../common/decorators/trim.decorator';
 import { SendDefaultCardPinService } from '../services/sendDefaultCardPin.service';
 import { SendDefaultPinDataDto, SendDefaultPinErrorResponses } from '../dto/send-default-pin.dto';
+import { UpdateCardService } from '../services/updateCard.service';
+import { UpdateCardRequestDto, UpdateCardResponseDto, UpdateCardErrorResponses } from '../dto/update-card.dto';
 
 /**
  * Controller to handle card ordering requests
@@ -50,6 +52,7 @@ export class CardController {
     private readonly orderCardService: OrderCardService,
     private readonly mapCardService: MapCardService,
     private readonly sendDefaultCardPinService: SendDefaultCardPinService,
+    private readonly updateCardService: UpdateCardService,
   ) { }
 
   @Post(':userId/order')
@@ -232,7 +235,7 @@ export class CardController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Send default PIN for a user\'s card',
-    description: "Triggers the process to send the default PIN for the user\'s mapped card. The PIN is typically sent via SMS to the user's registered contact information with the card provider.",
+    description: "Triggers the process to send the default PIN for the user's mapped card. The PIN is typically sent via SMS to the user's registered contact information with the card provider.",
   })
   @ApiParam({
     name: 'userId',
@@ -265,6 +268,79 @@ export class CardController {
     );
 
     return await this.sendDefaultCardPinService.sendDefaultPinByUserId(targetUserId);
+  }
+
+  /**
+   * Update card details for a user.
+   * @param userIdParam - User ID (Privy DID) or 'me' for the currently authenticated user.
+   * @param userData - The authenticated user's data.
+   * @param status - The new status of the card (optional).
+   * @param dailyLimitAmount - The daily spending limit amount for the card (optional).
+   * @returns Object containing the updated card details.
+   */
+  @Patch('update/:userId')
+  @ApiOperation({
+    summary: 'Update card details for a user',
+    description: 'Update the status and/or spending limits of a user\'s card. At least one of status or daily limit must be provided.',
+  })
+  @ApiStandardResponse(UpdateCardResponseDto, 'Card updated successfully')
+  @ApiResponse(UpdateCardErrorResponses.R400_BAD_REQUEST)
+  @ApiResponse(UpdateCardErrorResponses.R401_UNAUTHORIZED)
+  @ApiResponse(UpdateCardErrorResponses.R404_NOT_FOUND)
+  @ApiResponse(UpdateCardErrorResponses.R500_INTERNAL_SERVER_ERROR)
+  @ApiParam({
+    name: 'userId',
+    description: "User ID (Privy DID) or 'me' for the currently authenticated user.",
+    example: 'did:privy:user123',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'status',
+    description: 'The new status of the card',
+    example: 'active',
+    enum: ['active', 'inactive'],
+    required: false,
+  })
+  @ApiQuery({
+    name: 'dailyLimitAmount',
+    description: 'The daily spending limit amount for the card',
+    example: '1000',
+    type: String,
+    required: false,
+  })
+  async updateCard(
+    @Param('userId') @Trim() userIdParam: string,
+    @PrivyUser() userData: PrivyUserData,
+    @Query('status') status?: 'active' | 'inactive',
+    @Query('dailyLimitAmount') dailyLimitAmount?: string,
+  ): Promise<UpdateCardResponseDto> {
+    const targetUserId = resolveAndAuthorizeUserId(
+      userIdParam,
+      userData.userId,
+      'You are not authorized to update the card for this user.',
+    );
+
+    if (!status && !dailyLimitAmount) {
+      throw new BadRequestException('At least one of status or daily limit amount must be provided.');
+    }
+
+    let dailyLimitAmountNumber: number | undefined;
+    if (dailyLimitAmount) {
+      dailyLimitAmountNumber = parseFloat(dailyLimitAmount);
+      if (isNaN(dailyLimitAmountNumber)) {
+        throw new BadRequestException('Invalid daily limit amount. Must be a number.');
+      }
+    }
+
+    this.logger.log(`Updating card for user ${targetUserId} with status: ${status || 'not provided'} and daily limit: ${dailyLimitAmount || 'not provided'}`);
+    const result = await this.updateCardService.updateCardDetails(
+      targetUserId,
+      status || '',
+      dailyLimitAmountNumber || 0,
+      status === undefined,
+      dailyLimitAmountNumber === undefined
+    );
+    return result;
   }
 }
 
