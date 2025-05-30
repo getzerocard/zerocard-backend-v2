@@ -106,7 +106,7 @@ export function allocatefiatToLimits(
   );
   const effectiveFxRate =
     allocatedfiatDecimal.gt(0) && usdTotalDecimal.gt(0)
-      ? calculateRate(usdTotal, allocatedfiatDecimal.toNumber())
+      ? calculateRate(usdTotalDecimal.toNumber(), allocatedfiatDecimal.toNumber())
       : 0;
 
   return {
