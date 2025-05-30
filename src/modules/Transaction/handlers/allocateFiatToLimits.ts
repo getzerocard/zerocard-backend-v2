@@ -60,7 +60,7 @@ export function allocatefiatToLimits(
     const usdEquivalentDecimal = fxRateDecimal.gt(0)
       ? divideMoney(fiatToUseFromLimitDecimal, fxRateDecimal)
       : toMoney(0);
-    const usdEquivalent = parseFloat(formatMoney(usdEquivalentDecimal));
+    const usdEquivalent = parseFloat(usdEquivalentDecimal.toFixed(6));
 
     // Create a new chunk
     const chunk = new TransactionChunk(); // Use 'new' as we create instances
@@ -93,7 +93,7 @@ export function allocatefiatToLimits(
       `Allocated ${fiatToUseFromLimit} from limit ${limit.id}. Remaining on limit: ${limit.fiatRemaining}. Total remaining to allocate: ${remainingAmountDecimal.toString()}`,
     );
   }
-  const usdTotal = parseFloat(formatMoney(usdTotalDecimal));
+  const usdTotal = parseFloat(usdTotalDecimal.toFixed(6));
   const remainingAmount = parseFloat(formatMoney(remainingAmountDecimal));
   logger.debug(
     `Finished allocation. Total USD: ${usdTotal}. Chunks created: ${allocatedChunks.length}. Unallocated fiat: ${remainingAmount}`,

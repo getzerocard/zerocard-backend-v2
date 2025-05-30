@@ -22,7 +22,7 @@ export class TransactionChunk {
   @Column('decimal', { precision: 10, scale: 2 })
   fiatUsed: number; // Amount of fiat used from this spending limit
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 6 })
   usdEquivalent: number; // USD equivalent (fiatUsed / fxRate)
 
   @CreateDateColumn()
