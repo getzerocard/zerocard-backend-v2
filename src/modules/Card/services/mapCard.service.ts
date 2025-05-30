@@ -86,8 +86,8 @@ export class MapCardService {
           pos: true,
           web: true,
         },
-        allowedCategories: allowedCategories,
-        blockedCategories: ['zerocard'],
+        allowedCategories: [],
+        blockedCategories: [],
         spendingLimits: [
           {
             interval: 'daily',
