@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Transaction } from '../entity/transaction.entity';
@@ -68,29 +68,37 @@ export class ProcessTransactionService {
       throw new BadRequestException('Invalid fiat amount for transaction processing. Amount must be greater than zero.');
     }
     this.logger.log(`Starting transaction processing for user ${userId} with fiat amount ${fiatAmount}`);
-    return await this.transactionRepository.manager.transaction(
-      async (transactionalEntityManager) => {
-        return await processTransaction(
-          userId,
-          fiatAmount,
-          transactionReference,
-          merchantName,
-          merchantId,
-          state,
-          city,
-          cardId,
-          authorizationId,
-          category,
-          channel,
-          transactionModeType,
-          transactionalEntityManager,
-          status,
-          this.logger,
-          null, // we passed null because we are not using the recipient address and to address for spending
-          null, // we passed null because we are not using the recipient address and to address for spending
-        );
-      },
-    );
+    try {
+      return await this.transactionRepository.manager.transaction(
+        async (transactionalEntityManager) => {
+          return await processTransaction(
+            userId,
+            fiatAmount,
+            transactionReference,
+            merchantName,
+            merchantId,
+            state,
+            city,
+            cardId,
+            authorizationId,
+            category,
+            channel,
+            transactionModeType,
+            transactionalEntityManager,
+            status,
+            this.logger,
+            null, // we passed null because we are not using the recipient address and to address for spending
+            null, // we passed null because we are not using the recipient address and to address for spending
+          );
+        },
+      );
+    } catch (error) {
+      this.logger.error(`Failed to process transaction for user ${userId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      if (error instanceof Error && error.message.includes('No fiat or Dollar amount provided for rate calculation')) {
+        throw new InternalServerErrorException('Transaction processing failed: Unable to calculate rate due to missing fiat or USD amount data. Please ensure spending limits are properly configured with exchange rates.');
+      }
+      throw error;
+    }
   }
 
   /**
