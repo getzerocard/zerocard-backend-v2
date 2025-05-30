@@ -239,8 +239,9 @@ export class SetLimitService {
     const fxRateRaw = statusData.Rate ? parseFloat(statusData.Rate) : 0;
     if (fxRateRaw === 0) {
       this.logger.warn(
-        `No weighted rate returned from offramp service for order ${orderId}`,
+        `No weighted rate returned from offramp service for order ${orderId}`
       );
+      throw new BadRequestException('Cannot set spending limit: Exchange rate is not available or is zero.');
     }
     const fxRate = toMoney(fxRateRaw);
     const status = statusData.Status.toLowerCase();
