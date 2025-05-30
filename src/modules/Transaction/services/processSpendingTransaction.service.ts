@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Transaction } from '../entity/transaction.entity';
@@ -63,6 +63,11 @@ export class ProcessTransactionService {
     transactionModeType: string,
     status: 'pending' | 'completed' | 'refund',
   ): Promise<Transaction> {
+    if (!fiatAmount || fiatAmount <= 0) {
+      this.logger.error(`Invalid fiat amount provided for transaction processing: ${fiatAmount} for user ${userId}`);
+      throw new BadRequestException('Invalid fiat amount for transaction processing. Amount must be greater than zero.');
+    }
+    this.logger.log(`Starting transaction processing for user ${userId} with fiat amount ${fiatAmount}`);
     return await this.transactionRepository.manager.transaction(
       async (transactionalEntityManager) => {
         return await processTransaction(
