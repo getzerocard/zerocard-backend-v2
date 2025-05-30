@@ -56,7 +56,7 @@ export class Transaction {
   @Column({
     type: 'decimal',
     precision: 18,
-    scale: 2,
+    scale: 6,
     nullable: true,
     default: 0.0,
   })
