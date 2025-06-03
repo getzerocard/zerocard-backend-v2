@@ -12,11 +12,13 @@ model User {
   failedLoginAttempts Int            @default(0) @map("failed_login_attempts")
   lastFailedLoginAt   DateTime?      @map("last_failed_login_at")
   deletedAt           DateTime?      @map("deleted_at")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
   profile             Profile?
   refreshTokens       RefreshToken[]
   activityLogs        ActivityLog[]
-  createdAt           DateTime       @default(now()) @map("created_at")
-  updatedAt           DateTime       @updatedAt @map("updated_at")
+  wallets             Wallet[]
+  transactions        Transaction[]
 
   @@index([email])
   @@map("users")
