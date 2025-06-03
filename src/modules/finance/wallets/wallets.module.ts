@@ -6,4 +6,4 @@ import { WalletService } from './services';
   providers: [WalletRepository, WalletService],
   exports: [WalletService],
 })
-export class WalletModule { }
+export class WalletsModule {}

@@ -1,21 +1,5 @@
-import { AuthModule } from './auth';
-import { CardsModule } from './cards';
-import { EventBusModule } from './events';
-import { NotificationModule } from './notification';
-import { SchedulerModule } from './scheduler';
-import { TransactionsModule } from './transactions';
-import { UsersModule } from './users';
-import { WalletModule } from './wallet';
-import { WorkersModule } from './workers';
+import { FINANCE_MODULES } from './finance';
+import { INFRASTRUCTURE_MODULES } from './infrastructure';
+import { USER_MODULES } from './user';
 
-export const MODULES = [
-  CardsModule,
-  EventBusModule,
-  NotificationModule,
-  AuthModule,
-  SchedulerModule,
-  TransactionsModule,
-  UsersModule,
-  WalletModule,
-  WorkersModule,
-];
+export const MODULES = [...USER_MODULES, ...FINANCE_MODULES, ...INFRASTRUCTURE_MODULES];
