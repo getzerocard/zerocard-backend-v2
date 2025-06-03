@@ -1,61 +1,88 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { Logger, ValidationPipe } from '@nestjs/common';
-import { ResponseInterceptor } from './common/interceptors/response.interceptor';
-import { HttpExceptionFilter } from './common/filters';
+import { HttpExceptionsFilter } from '@/common/filters';
+import { TransformResponseInterceptor } from '@/common/interceptors';
+import { AppModule } from '@/app.module';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import { Logger, LoggerErrorInterceptor, PinoLogger } from 'nestjs-pino';
+import { useContainer } from 'class-validator';
+import compression from 'compression';
+import './instrument';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
     rawBody: true,
+    bodyParser: true,
   });
-  const logger = new Logger('NestApplication');
-  try {
-    app.enableCors();
-    app.useGlobalPipes(new ValidationPipe());
-    app.useGlobalInterceptors(new ResponseInterceptor());
-    app.useGlobalFilters(new HttpExceptionFilter());
 
-    // Set global prefix before Swagger setup
-    app.setGlobalPrefix('/api/v1');
+  const config = app.get(ConfigService);
+  const logger = await app.resolve(PinoLogger);
 
-    // Swagger configuration
-    const config = new DocumentBuilder()
-      .setTitle('Zerocard API')
-      .setDescription('API documentation for the Zerocard system')
+  let origin: string[] | boolean = true;
+
+  if (config.get('NODE_ENV') === 'production') {
+    origin = [config.get<string>('CLIENT_URL')];
+  }
+
+  app.setGlobalPrefix('api/v1');
+
+  // Enable CORS with more specific options
+  app.enableCors({
+    origin,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
+
+  app.useLogger(app.get(Logger));
+  app.use(compression());
+  app.use(cookieParser());
+  app.use(helmet());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      validateCustomDecorators: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+      validationError: { target: false },
+    }),
+  );
+  app.useGlobalInterceptors(
+    new LoggerErrorInterceptor(),
+    new TransformResponseInterceptor(),
+    new ClassSerializerInterceptor(app.get(Reflector)),
+  );
+  app.useGlobalFilters(new HttpExceptionsFilter());
+
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
+
+  app.enableShutdownHooks();
+
+  // Enable swagger in local and development environments
+  if (['local', 'development'].includes(config.get<string>('APP_ENV'))) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Zero Card Backend')
+      .setDescription('API documentation for Zero Card Backend application')
       .setVersion('1.0')
       .addBearerAuth()
-      .addApiKey(
-        { type: 'apiKey', name: 'x-identity-token', in: 'header' },
-        'identity-token',
-      )
       .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document, {
-      customJs: '/swagger-token-persistence.js',
-      customSiteTitle: 'Zerocard API Documentation',
-      swaggerOptions: {
-        persistAuthorization: true,
-      },
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+
+    SwaggerModule.setup('docs', app, document, {
+      customSiteTitle: 'Zero Card Backend',
     });
-
-    const configService = app.get(ConfigService);
-
-    const port = parseInt(configService.get<string>('PORT') || '3000', 10);
-
-    if (isNaN(port) || port <= 0 || port > 65535) {
-      throw new Error(`Invalid PORT value: ${port}`);
-    }
-    await app.listen(port);
-
-    logger.log(`Application is running on: ${await app.getUrl()}`);
-    logger.log(`Swagger documentation available at: ${await app.getUrl()}/api`);
-  } catch (error) {
-    logger.error(
-      `Failed to start the application: ${error instanceof Error ? error.message : String(error)}`,
-    );
-    process.exit(1);
   }
+
+  const port = config.get<number>('APP_PORT', 3000);
+
+  await app.listen(port, () => {
+    logger.info(`🚀 Zero Card Backend is running on PORT ${port}`);
+  });
 }
 bootstrap();

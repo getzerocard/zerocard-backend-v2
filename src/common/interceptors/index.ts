@@ -1,2 +1,3 @@
-export * from './transform.interceptor';
-export * from './response.interceptor';
+import { TransformResponseInterceptor } from './transform-response.interceptor';
+
+export { TransformResponseInterceptor };
