@@ -1,0 +1,75 @@
+model User {
+  id                  String         @id @default(uuid())
+  firstName           String         @map("first_name")
+  lastName            String         @map("last_name")
+  email               String         @unique @map("email")
+  password            String         @map("password")
+  isVerified          Boolean        @default(false) @map("is_verified")
+  isBlocked           Boolean        @default(false) @map("is_blocked")
+  isStaff             Boolean        @default(false) @map("is_staff")
+  passwordUpdatedAt   DateTime?      @map("password_updated_at")
+  lastLoginAt         DateTime?      @map("last_login_at")
+  failedLoginAttempts Int            @default(0) @map("failed_login_attempts")
+  lastFailedLoginAt   DateTime?      @map("last_failed_login_at")
+  deletedAt           DateTime?      @map("deleted_at")
+  profile             Profile?
+  refreshTokens       RefreshToken[]
+  activityLogs        ActivityLog[]
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@map("users")
+}
+
+model Profile {
+  id             String    @id @default(uuid())
+  userId         String    @unique @map("user_id")
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profilePicture String?   @map("profile_picture")
+  bio            String?   @map("bio") @db.Text
+  country        String?   @map("country")
+  city           String?   @map("city")
+  state          String?   @map("state")
+  address        String?   @map("address")
+  zipCode        String?   @map("zip_code")
+  dialingCode    String?   @map("dialing_code")
+  phoneNumber    String?   @map("phone_number")
+  gender         String?   @map("gender")
+  dateOfBirth    DateTime? @map("date_of_birth")
+  additionalInfo Json?     @map("additional_info")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("profiles")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @map("token")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("refresh_tokens")
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String   @map("user_id") @db.Uuid
+  action      String   @map("action")
+  targetType  String?  @map("target_type")
+  targetId    String?  @map("target_id") @db.Uuid
+  description String?  @map("description")
+  metadata    Json?    @map("metadata")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  isDeleted   Boolean  @default(false) @map("is_deleted")
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([targetType, targetId])
+  @@map("activity_logs")
+}
