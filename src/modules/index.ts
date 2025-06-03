@@ -8,14 +8,14 @@ import { UsersModule } from './users';
 import { WalletModule } from './wallet';
 import { WorkersModule } from './workers';
 
-export const MODULES = {
-  AuthModule,
+export const MODULES = [
   CardsModule,
   EventBusModule,
   NotificationModule,
+  AuthModule,
   SchedulerModule,
   TransactionsModule,
   UsersModule,
   WalletModule,
   WorkersModule,
-};
+];

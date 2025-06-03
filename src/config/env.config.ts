@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const config = {
+export const config = {
   app: {
     env: process.env.NODE_ENV || 'local',
     name: process.env.APP_NAME || 'zerocard',
@@ -19,6 +19,4 @@ const config = {
     apiSecret: process.env.PRIVY_API_SECRET,
     authorizationPrivateKey: process.env.PRIVY_AUTHORIZATION_PRIVATE_KEY,
   },
-};
-
-export default config;
+} as const;
