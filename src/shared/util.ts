@@ -78,18 +78,4 @@ export class Util {
   static slugify(str: string): string {
     return str.toLowerCase().replace(/\s+/g, '-');
   }
-
-  static calculateExpiryDate(days: number): Date {
-    const now = new Date();
-
-    return new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
-  }
-
-  static formatDateTimeToUtc(date: Date = new Date()): string {
-    return new Intl.DateTimeFormat('en-US', {
-      dateStyle: 'full',
-      timeStyle: 'long',
-      timeZone: 'UTC',
-    }).format(date);
-  }
 }
