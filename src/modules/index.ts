@@ -1,5 +1,4 @@
-import { FINANCE_MODULES } from './finance';
+import { CORE_MODULES } from './core';
 import { INFRASTRUCTURE_MODULES } from './infrastructure';
-import { USER_MODULES } from './user';
 
-export const MODULES = [...USER_MODULES, ...FINANCE_MODULES, ...INFRASTRUCTURE_MODULES];
+export const MODULES = [...CORE_MODULES, ...INFRASTRUCTURE_MODULES];
