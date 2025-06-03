@@ -1,0 +1,37 @@
+services:
+  postgres:
+    container_name: zerocard_postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: zerocard-local
+    ports:
+      - '5432:5432'
+    volumes:
+      - zerocard_postgres_data:/var/lib/postgresql/data/
+
+  postgres_test:
+    container_name: zerocard_postgres_test
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: zerocard-test
+    ports:
+      - '5445:5432'
+    volumes:
+      - zerocard_postgres_test_data:/var/lib/postgresql/data/
+
+  redis:
+    container_name: zerocard_redis
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    volumes:
+      - zerocard_redis_data:/data
+
+volumes:
+  zerocard_postgres_data:
+  zerocard_postgres_test_data:
+  zerocard_redis_data:
