@@ -20,7 +20,5 @@ import { ConfigModule } from '@nestjs/config';
     AppQueueModule,
     ...MODULES,
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}

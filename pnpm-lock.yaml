@@ -13,7 +13,10 @@ dependencies:
     version: 1.0.13(@rhinestone/module-sdk@0.2.8)(typescript@5.8.2)(viem@2.30.6)
   '@nestjs-modules/ioredis':
     specifier: ^2.0.2
-    version: 2.0.2(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(@nestjs/typeorm@11.0.0)(@prisma/client@6.8.2)(ioredis@5.6.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17)
+    version: 2.0.2(@nestjs/axios@4.0.0)(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(@nestjs/typeorm@11.0.0)(@prisma/client@6.8.2)(ioredis@5.6.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17)
+  '@nestjs/axios':
+    specifier: ^4.0.0
+    version: 4.0.0(@nestjs/common@11.1.2)(axios@1.9.0)(rxjs@7.8.2)
   '@nestjs/bull':
     specifier: ^11.0.2
     version: 11.0.2(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(bull@4.16.5)
@@ -41,6 +44,9 @@ dependencies:
   '@nestjs/swagger':
     specifier: ^11.2.0
     version: 11.2.0(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)
+  '@nestjs/terminus':
+    specifier: ^11.0.0
+    version: 11.0.0(@nestjs/axios@4.0.0)(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(@nestjs/typeorm@11.0.0)(@prisma/client@6.8.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17)
   '@nestjs/typeorm':
     specifier: ^11.0.0
     version: 11.0.0(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17)
@@ -1850,7 +1856,7 @@ packages:
     dev: false
     optional: true
 
-  /@nestjs-modules/ioredis@2.0.2(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(@nestjs/typeorm@11.0.0)(@prisma/client@6.8.2)(ioredis@5.6.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17):
+  /@nestjs-modules/ioredis@2.0.2(@nestjs/axios@4.0.0)(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(@nestjs/typeorm@11.0.0)(@prisma/client@6.8.2)(ioredis@5.6.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17):
     resolution: {integrity: sha512-8pzSvT8R3XP6p8ZzQmEN8OnY0yWrJ/elFhwQK+PID2zf1SLBkAZ18bDcx3SKQ2atledt0gd9kBeP5xT4MlyS7Q==}
     peerDependencies:
       '@nestjs/common': '>=6.7.0'
@@ -1861,7 +1867,7 @@ packages:
       '@nestjs/core': 11.1.2(@nestjs/common@11.1.2)(@nestjs/platform-express@11.1.0)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       ioredis: 5.6.1
     optionalDependencies:
-      '@nestjs/terminus': 10.2.0(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(@nestjs/typeorm@11.0.0)(@prisma/client@6.8.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17)
+      '@nestjs/terminus': 10.2.0(@nestjs/axios@4.0.0)(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(@nestjs/typeorm@11.0.0)(@prisma/client@6.8.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17)
     transitivePeerDependencies:
       - '@grpc/grpc-js'
       - '@grpc/proto-loader'
@@ -1878,6 +1884,18 @@ packages:
       - rxjs
       - sequelize
       - typeorm
+    dev: false
+
+  /@nestjs/axios@4.0.0(@nestjs/common@11.1.2)(axios@1.9.0)(rxjs@7.8.2):
+    resolution: {integrity: sha512-1cB+Jyltu/uUPNQrpUimRHEQHrnQrpLzVj6dU3dgn6iDDDdahr10TgHFGTmw5VuJ9GzKZsCLDL78VSwJAs/9JQ==}
+    peerDependencies:
+      '@nestjs/common': ^10.0.0 || ^11.0.0
+      axios: ^1.3.1
+      rxjs: ^7.0.0
+    dependencies:
+      '@nestjs/common': 11.1.2(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      axios: 1.9.0
+      rxjs: 7.8.2
     dev: false
 
   /@nestjs/bull-shared@11.0.2(@nestjs/common@11.1.2)(@nestjs/core@11.1.2):
@@ -2141,7 +2159,7 @@ packages:
       swagger-ui-dist: 5.21.0
     dev: false
 
-  /@nestjs/terminus@10.2.0(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(@nestjs/typeorm@11.0.0)(@prisma/client@6.8.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17):
+  /@nestjs/terminus@10.2.0(@nestjs/axios@4.0.0)(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(@nestjs/typeorm@11.0.0)(@prisma/client@6.8.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17):
     resolution: {integrity: sha512-zPs98xvJ4ogEimRQOz8eU90mb7z+W/kd/mL4peOgrJ/VqER+ibN2Cboj65uJZW3XuNhpOqaeYOJte86InJd44A==}
     requiresBuild: true
     peerDependencies:
@@ -2190,6 +2208,7 @@ packages:
       typeorm:
         optional: true
     dependencies:
+      '@nestjs/axios': 4.0.0(@nestjs/common@11.1.2)(axios@1.9.0)(rxjs@7.8.2)
       '@nestjs/common': 11.1.2(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.2(@nestjs/common@11.1.2)(@nestjs/platform-express@11.1.0)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/typeorm': 11.0.0(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17)
@@ -2201,6 +2220,66 @@ packages:
       typeorm: 0.3.17(ioredis@5.6.1)(pg@8.16.0)(ts-node@10.9.2)
     dev: false
     optional: true
+
+  /@nestjs/terminus@11.0.0(@nestjs/axios@4.0.0)(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(@nestjs/typeorm@11.0.0)(@prisma/client@6.8.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17):
+    resolution: {integrity: sha512-c55LOo9YGovmQHtFUMa/vDaxGZ2cglMTZejqgHREaApt/GArTfgYYGwhRXPLq8ZwiQQlLuYB+79e9iA8mlDSLA==}
+    peerDependencies:
+      '@grpc/grpc-js': '*'
+      '@grpc/proto-loader': '*'
+      '@mikro-orm/core': '*'
+      '@mikro-orm/nestjs': '*'
+      '@nestjs/axios': ^2.0.0 || ^3.0.0 || ^4.0.0
+      '@nestjs/common': ^10.0.0 || ^11.0.0
+      '@nestjs/core': ^10.0.0 || ^11.0.0
+      '@nestjs/microservices': ^10.0.0 || ^11.0.0
+      '@nestjs/mongoose': ^11.0.0
+      '@nestjs/sequelize': ^10.0.0 || ^11.0.0
+      '@nestjs/typeorm': ^10.0.0 || ^11.0.0
+      '@prisma/client': '*'
+      mongoose: '*'
+      reflect-metadata: 0.1.x || 0.2.x
+      rxjs: 7.x
+      sequelize: '*'
+      typeorm: '*'
+    peerDependenciesMeta:
+      '@grpc/grpc-js':
+        optional: true
+      '@grpc/proto-loader':
+        optional: true
+      '@mikro-orm/core':
+        optional: true
+      '@mikro-orm/nestjs':
+        optional: true
+      '@nestjs/axios':
+        optional: true
+      '@nestjs/microservices':
+        optional: true
+      '@nestjs/mongoose':
+        optional: true
+      '@nestjs/sequelize':
+        optional: true
+      '@nestjs/typeorm':
+        optional: true
+      '@prisma/client':
+        optional: true
+      mongoose:
+        optional: true
+      sequelize:
+        optional: true
+      typeorm:
+        optional: true
+    dependencies:
+      '@nestjs/axios': 4.0.0(@nestjs/common@11.1.2)(axios@1.9.0)(rxjs@7.8.2)
+      '@nestjs/common': 11.1.2(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.2(@nestjs/common@11.1.2)(@nestjs/platform-express@11.1.0)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/typeorm': 11.0.0(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.17)
+      '@prisma/client': 6.8.2(prisma@6.8.2)(typescript@5.8.2)
+      boxen: 5.1.2
+      check-disk-space: 3.4.0
+      reflect-metadata: 0.2.2
+      rxjs: 7.8.2
+      typeorm: 0.3.17(ioredis@5.6.1)(pg@8.16.0)(ts-node@10.9.2)
+    dev: false
 
   /@nestjs/testing@11.1.0(@nestjs/common@11.1.2)(@nestjs/core@11.1.2)(@nestjs/platform-express@11.1.0):
     resolution: {integrity: sha512-gQ+NGshkHbNrDNXMVaPiwduqZ8YHpXrnsQqhSsnyNYOcDNPdBbB+0FDq7XiiklluXqjdLAN8i+bS7MbGlZIhKw==}
@@ -3723,7 +3802,6 @@ packages:
     dependencies:
       string-width: 4.2.3
     dev: false
-    optional: true
 
   /ansi-colors@4.1.3:
     resolution: {integrity: sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw==}
@@ -4083,7 +4161,6 @@ packages:
       widest-line: 3.1.0
       wrap-ansi: 7.0.0
     dev: false
-    optional: true
 
   /brace-expansion@1.1.11:
     resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}
@@ -4306,7 +4383,6 @@ packages:
     engines: {node: '>=16'}
     requiresBuild: true
     dev: false
-    optional: true
 
   /chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
@@ -4360,7 +4436,6 @@ packages:
     engines: {node: '>=6'}
     requiresBuild: true
     dev: false
-    optional: true
 
   /cli-cursor@3.1.0:
     resolution: {integrity: sha512-I/zHAwsKf9FqGoXM4WWRACob9+SNukZTd94DWF57E4toouRulbCxcUh6RKUEOQlYTHJnzkPMySvPNaaSLNfLZw==}
@@ -10317,7 +10392,6 @@ packages:
     dependencies:
       string-width: 4.2.3
     dev: false
-    optional: true
 
   /word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
