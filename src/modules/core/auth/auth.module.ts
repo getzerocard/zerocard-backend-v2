@@ -1,8 +1,20 @@
 import { Module } from '@nestjs/common';
-import { AuthService, PrivyService } from './services';
+import { AuthService } from './services';
+import { RegisterController } from './controllers';
+import { RouterModule } from '@nestjs/core';
 
 @Module({
+  imports: [
+    RouterModule.register([
+      {
+        path: 'auth',
+        module: AuthModule,
+        children: [RegisterController],
+      },
+    ]),
+  ],
+  controllers: [RegisterController],
   providers: [AuthService],
-  exports: [PrivyService],
+  exports: [],
 })
-export class AuthModule { }
+export class AuthModule {}
