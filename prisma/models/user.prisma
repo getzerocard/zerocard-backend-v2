@@ -1,44 +1,52 @@
 model User {
-  id            String         @id @default(uuid())
-  firstName     String         @map("first_name")
-  lastName      String         @map("last_name")
-  uniqueName    String         @unique @map("unique_name")
-  email         String         @unique @map("email")
-  deletedAt     DateTime?      @map("deleted_at")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  userAuth      UserAuth?
-  profile       Profile?
-  refreshTokens RefreshToken[]
-  activityLogs  ActivityLog[]
-  wallets       Wallet[]
-  transactions  Transaction[]
-  sessions      UserSession[]
+  id                 String        @id @default(uuid())
+  firstName          String?       @map("first_name")
+  lastName           String?       @map("last_name")
+  uniqueName         String?       @unique @map("unique_name")
+  avatar             String?       @map("avatar")
+  email              String        @unique @map("email")
+  walletsGeneratedAt DateTime?     @map("wallets_generated_at") @db.Timestamptz
+  deletedAt          DateTime?     @map("deleted_at")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  userAuth           UserAuth?
+  profile            UserProfile?
+  activityLogs       ActivityLog[]
+  wallets            Wallet[]
+  transactions       Transaction[]
+  sessions           UserSession[]
 
   @@index([email])
   @@map("users")
 }
 
 model UserAuth {
-  id                  String    @id @default(uuid()) @db.Uuid
-  userId              String    @unique @map("user_id") @db.Uuid
-  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  password            String    @map("password")
-  unlockCode          String?   @map("unlock_code")
-  isBlocked           Boolean   @default(false) @map("is_blocked")
-  hasBiometricEnabled Boolean   @default(false) @map("has_biometric_enabled")
-  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
-  lastFailedLoginAt   DateTime? @map("last_failed_login_at") @db.Timestamptz
-  emailVerifiedAt     DateTime? @map("email_verified_at") @db.Timestamptz
-  passwordUpdatedAt   DateTime? @map("password_updated_at") @db.Timestamptz
-  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  userId              String            @unique @map("user_id") @db.Uuid
+  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isBlocked           Boolean           @default(false) @map("is_blocked")
+  hasBiometricEnabled Boolean           @default(false) @map("has_biometric_enabled")
+  emailVerifiedAt     DateTime?         @map("email_verified_at") @db.Timestamptz
+  createdAt           DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+  oauthConnections    OAuthConnection[]
 
   @@index([userId])
-  @@map("users_auth")
+  @@map("user_auth")
 }
 
-model Profile {
+model OAuthConnection {
+  id             String   @id() @default(uuid())
+  userId         String   @map("user_id") @db.Uuid
+  provider       String   @map("provider")
+  providerUserId String   @map("provider_user_id")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  user           UserAuth @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("oauth_connections")
+}
+
+model UserProfile {
   id             String    @id @default(uuid())
   userId         String    @unique @map("user_id")
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -57,19 +65,7 @@ model Profile {
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  @@map("profiles")
-}
-
-model RefreshToken {
-  id        String   @id @default(uuid())
-  userId    String   @unique @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  token     String   @map("token")
-  expiresAt DateTime @map("expires_at")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("refresh_tokens")
+  @@map("user_profile")
 }
 
 model UserSession {

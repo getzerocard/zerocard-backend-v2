@@ -1,20 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './services';
-import { RegisterController } from './controllers';
-import { RouterModule } from '@nestjs/core';
+import { AuthService, SessionService, TokenService } from './services';
+import { MfaModule } from '@/modules/core/mfa';
+import { AuthController } from './controllers';
 
 @Module({
-  imports: [
-    RouterModule.register([
-      {
-        path: 'auth',
-        module: AuthModule,
-        children: [RegisterController],
-      },
-    ]),
-  ],
-  controllers: [RegisterController],
-  providers: [AuthService],
+  imports: [MfaModule],
+  controllers: [AuthController],
+  providers: [AuthService, SessionService, TokenService],
   exports: [],
 })
 export class AuthModule {}

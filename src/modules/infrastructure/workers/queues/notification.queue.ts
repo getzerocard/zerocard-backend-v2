@@ -2,7 +2,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { PinoLogger } from 'nestjs-pino';
-import { INotification } from '@/modules/notification';
+import { INotification } from '@/modules/infrastructure/notification';
 import { NOTIFICATION_QUEUE } from '@/shared';
 
 @Injectable()
@@ -16,29 +16,22 @@ export class NotificationQueue {
 
   async addNotification(notification: INotification) {
     try {
-      const job = await this.notificationQueue.add(
-        'process-notification',
-        notification,
-        {
-          priority: this.getPriorityLevel(notification.options.priority),
-          attempts: notification.options.retryAttempts || 3,
-          backoff: {
-            type: 'exponential',
-            delay: notification.options.retryDelay || 1000,
-          },
-          removeOnComplete: true,
-          removeOnFail: false,
+      const job = await this.notificationQueue.add('process-notification', notification, {
+        priority: this.getPriorityLevel(notification.options.priority),
+        attempts: notification.options.retryAttempts || 3,
+        backoff: {
+          type: 'exponential',
+          delay: notification.options.retryDelay || 1000,
         },
-      );
+        removeOnComplete: true,
+        removeOnFail: false,
+      });
 
       this.logger.info(`Added notification to queue with job id: ${job.id}`);
 
       return job.id;
     } catch (error) {
-      this.logger.error(
-        `Failed to add notification to queue: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Failed to add notification to queue: ${error.message}`, error.stack);
       throw error;
     }
   }

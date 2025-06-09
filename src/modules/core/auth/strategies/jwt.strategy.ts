@@ -2,15 +2,13 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UsersService } from '@/modules/user/users/services';
-import { AuthUserEntity } from '../entities';
-import { ErrorMessage, SessionService, AccessTokenPayload } from '@/shared';
+import { SessionService } from '../services';
+import { AccessTokenPayload } from '../types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     configService: ConfigService,
-    private readonly userService: UsersService,
     private readonly sessionService: SessionService,
   ) {
     super({
@@ -24,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const isSessionBlacklisted = await this.sessionService.isSessionBlacklisted(payload.sid);
 
     if (isSessionBlacklisted) {
-      throw new UnauthorizedException(ErrorMessage.SESSION_EXPIRED);
+      throw new UnauthorizedException('Session expired');
     }
   }
 }

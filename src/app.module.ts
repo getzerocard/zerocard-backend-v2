@@ -1,8 +1,10 @@
-import { config, configValidationSchema } from '@/config';
 import { AppCacheModule, AppLoggerModule, AppQueueModule, PrismaModule } from '@/infrastructure';
-import { MODULES } from '@/modules';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { config, configValidationSchema } from '@/config';
+import { DeviceInfoMiddleware } from '@/common';
 import { ConfigModule } from '@nestjs/config';
+import { SharedModule } from '@/shared';
+import { MODULES } from '@/modules';
 
 @Module({
   imports: [
@@ -14,6 +16,7 @@ import { ConfigModule } from '@nestjs/config';
         abortEarly: true,
       },
     }),
+    SharedModule,
     PrismaModule,
     AppCacheModule,
     AppLoggerModule,
@@ -21,4 +24,8 @@ import { ConfigModule } from '@nestjs/config';
     ...MODULES,
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(DeviceInfoMiddleware).forRoutes('*');
+  }
+}

@@ -5,7 +5,7 @@ import { SesProvider } from './providers';
 import { EmailService } from './services';
 import { EmailTemplateRendererService } from './providers';
 import { NOTIFICATION_QUEUE } from '@/shared/constants';
-import { NotificationQueue } from '@/modules/workers/queues';
+import { NotificationQueue } from '@/modules/infrastructure/workers/queues';
 
 @Module({
   imports: [

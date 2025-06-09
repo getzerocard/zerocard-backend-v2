@@ -1,7 +1,7 @@
 import { Module, Global } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { EventBusService } from './bus';
-import { NotificationModule } from '@/modules/notification';
+import { NotificationModule } from '@/modules/infrastructure/notification';
 import { EventDefinitions } from './definitions';
 import { DefinitionHandlers } from './handlers';
 

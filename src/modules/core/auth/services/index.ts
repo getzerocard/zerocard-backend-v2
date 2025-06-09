@@ -1,2 +1,3 @@
 export * from './auth.service';
-export * from './privy.service';
+export * from './session.service';
+export * from './token.service';

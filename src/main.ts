@@ -30,11 +30,20 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api/v1');
 
+  const customHeaders = [
+    'x-device-id', // the client generates a device id (uuid most preferably) and passes it as a header
+    'x-session-id', // the backend will generate a session id and pass it to the client, the client will then pass it back to the backend in the request header
+    'x-app-version', // e.g. The version of the mystocks.africa mobile app the user is using
+    'x-device-name', // e.g. "iPhone 13 Pro"
+    'x-timezone', // e.g. "Africa/Lagos"
+    'x-refresh-token', // the refresh token sent as a header for mobile
+  ];
+
   // Enable CORS with more specific options
   app.enableCors({
     origin,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', ...customHeaders],
     credentials: true,
   });
 

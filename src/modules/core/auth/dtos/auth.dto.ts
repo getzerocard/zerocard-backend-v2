@@ -4,8 +4,14 @@ export class SignInDto {
   @IsString()
   @IsNotEmpty()
   email: string;
+}
+
+export class CompleteSignInDto {
+  @IsString()
+  @IsNotEmpty()
+  email: string;
 
   @IsString()
   @IsNotEmpty()
-  password: string;
+  code: string;
 }

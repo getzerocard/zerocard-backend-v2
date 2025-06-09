@@ -2,7 +2,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { PinoLogger } from 'nestjs-pino';
-import { INotification, NotificationService } from '@/modules/notification';
+import { INotification, NotificationService } from '@/modules/infrastructure/notification';
 import { NOTIFICATION_QUEUE, NotificationStatus } from '@/shared';
 
 @Injectable()
