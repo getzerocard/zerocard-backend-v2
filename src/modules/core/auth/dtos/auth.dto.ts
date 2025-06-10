@@ -15,3 +15,9 @@ export class CompleteSignInDto {
   @IsNotEmpty()
   code: string;
 }
+
+export class OAuthSigninDto {
+  @IsString()
+  @IsNotEmpty()
+  idToken: string;
+}

@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: testpass
-      POSTGRES_DB: zerocard-local
+      POSTGRES_DB: zerocard
     ports:
       - '5432:5432'
     volumes:

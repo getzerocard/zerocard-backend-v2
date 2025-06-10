@@ -1,6 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiBody, ApiResponse } from '@nestjs/swagger';
-import { ErrorMessage, SuccessMessage } from '@/shared';
 import { ApiDocs } from '@/common/decorators';
 import { SendMfaDto, VerifyMfaDto, ToggleMfaDto } from '../dtos';
 
@@ -21,7 +20,7 @@ export const MfaSwagger = {
       schema: {
         type: 'object',
         properties: {
-          message: { type: 'string', example: SuccessMessage.MFA_TOKEN_SENT },
+          message: { type: 'string', example: 'MFA token sent' },
         },
       },
     }),
@@ -54,7 +53,7 @@ export const MfaSwagger = {
       schema: {
         type: 'object',
         properties: {
-          message: { type: 'string', example: SuccessMessage.MFA_TOKEN_VERIFIED },
+          message: { type: 'string', example: 'MFA token verified' },
         },
       },
     }),
@@ -64,7 +63,7 @@ export const MfaSwagger = {
       schema: {
         type: 'object',
         properties: {
-          message: { type: 'string', example: ErrorMessage.INVALID_MFA_TOKEN },
+          message: { type: 'string', example: 'Invalid or expired MFA token' },
           error: { type: 'string', example: 'Unauthorized' },
         },
       },
@@ -98,7 +97,7 @@ export const MfaSwagger = {
       schema: {
         type: 'object',
         properties: {
-          message: { type: 'string', example: SuccessMessage.MFA_TOGGLED },
+          message: { type: 'string', example: 'MFA status updated successfully' },
         },
       },
     }),

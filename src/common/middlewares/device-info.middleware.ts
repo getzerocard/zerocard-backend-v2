@@ -1,7 +1,6 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, NextFunction, Response } from 'express';
-import { ClientPlatform, DeviceHeaders, DeviceInfo } from '../types';
-import { DeviceService } from '../module/services';
+import { ClientPlatform, DeviceHeaders, DeviceInfo, DeviceService } from '@/shared';
 
 @Injectable()
 export class DeviceInfoMiddleware implements NestMiddleware {

@@ -10,7 +10,7 @@ import cookieParser from 'cookie-parser';
 import { Logger, LoggerErrorInterceptor, PinoLogger } from 'nestjs-pino';
 import { useContainer } from 'class-validator';
 import compression from 'compression';
-import './instrument';
+// import './instrument';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

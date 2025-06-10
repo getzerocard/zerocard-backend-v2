@@ -3,9 +3,8 @@ import { MfaContext } from '@/modules/core/mfa/dtos';
 import { EventBusService } from '@/modules/infrastructure/events';
 import { Send2FAMfaTokenEvent } from '@/modules/infrastructure/events/definitions';
 import { CacheService } from '@/infrastructure';
-import { Util } from '@/shared';
+import { UserEntity, Util } from '@/shared';
 import { PinoLogger } from 'nestjs-pino';
-import { User } from '@prisma/client';
 
 @Injectable()
 export class MfaService {
@@ -30,7 +29,7 @@ export class MfaService {
     return token;
   }
 
-  async sendMfaToken(user: User, context: MfaContext): Promise<void> {
+  async sendMfaToken(user: UserEntity, context: MfaContext): Promise<void> {
     const token = await this.generateToken(user.email, context);
 
     this.eventBus.publish(new Send2FAMfaTokenEvent(user.id, user.email, token));
