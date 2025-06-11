@@ -21,3 +21,9 @@ export class OAuthSigninDto {
   @IsNotEmpty()
   idToken: string;
 }
+
+export class ResendOtpDto {
+  @IsString()
+  @IsNotEmpty()
+  email: string;
+}

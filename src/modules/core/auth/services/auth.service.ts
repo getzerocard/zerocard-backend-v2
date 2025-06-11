@@ -69,6 +69,15 @@ export class AuthService extends BaseAuthService {
     return this.completeAuth(authUser, deviceInfo);
   }
 
+  async resendOtp(email: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    const authUser = AuthUserEntity.fromRawData(user);
+    await this.mfaService.sendMfaToken(authUser, 'login');
+  }
+
   async refreshToken(refreshToken: string, deviceInfo: DeviceInfo) {
     if (!refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
