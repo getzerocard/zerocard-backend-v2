@@ -356,21 +356,16 @@ export const baseLayout: EmailLayout = {
                       <tr>
                         <td align="center">
                           <div class="logo">
-                            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                              <tr>
-                                <td
-                                  style="
-                                    background: url('https://zcrd.s3.us-east-1.amazonaws.com/zerocard.png') no-repeat center/contain;
-                                    width: 120px;
-                                    height: 40px;
-                                    border-radius: 8px;
-                                  "
-                                  aria-label="zerocard logo"
-                                >
-                                  &nbsp;
-                                </td>
-                              </tr>
-                            </table>
+                            <img
+                              src="https://zcrd.s3.us-east-1.amazonaws.com/zerocard.png"
+                              alt="zerocard"
+                              style="
+                                height: 40px;
+                                width: auto;
+                                display: block;
+                                margin: 0 auto;
+                              "
+                            />
                           </div>
                         </td>
                       </tr>
