@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../repositories';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class UsersService {
@@ -9,6 +9,10 @@ export class UsersService {
     // TODO: create user usdc wallet, and other necessary setups
     // TODO: use a queue to handle this
     return await this.usersRepository.create(email);
+  }
+
+  async getUserProfile(userId: string) {
+    const user = await this.usersRepository.findUser({ id: userId });
   }
 
   async findByEmail(email: string) {

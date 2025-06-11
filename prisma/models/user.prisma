@@ -6,9 +6,10 @@ model User {
   avatar             String?       @map("avatar")
   email              String        @unique @map("email")
   walletsGeneratedAt DateTime?     @map("wallets_generated_at") @db.Timestamptz
-  deletedAt          DateTime?     @map("deleted_at")
-  createdAt          DateTime      @default(now()) @map("created_at")
-  updatedAt          DateTime      @updatedAt @map("updated_at")
+  kycStatus          KycStatus     @default(NOT_STARTED) @map("kyc_status")
+  deletedAt          DateTime?     @map("deleted_at") @db.Timestamptz
+  createdAt          DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime      @updatedAt @map("updated_at") @db.Timestamptz
   userAuth           UserAuth?
   profile            UserProfile?
   activityLogs       ActivityLog[]
@@ -18,6 +19,13 @@ model User {
 
   @@index([email])
   @@map("users")
+}
+
+enum KycStatus {
+  NOT_STARTED @map("not_started")
+  PENDING     @map("pending")
+  COMPLETED   @map("completed")
+  FAILED      @map("failed")
 }
 
 model UserAuth {
@@ -60,10 +68,10 @@ model UserProfile {
   dialingCode    String?   @map("dialing_code")
   phoneNumber    String?   @map("phone_number")
   gender         String?   @map("gender")
-  dateOfBirth    DateTime? @map("date_of_birth")
+  dateOfBirth    DateTime? @map("date_of_birth") @db.Timestamptz
   additionalInfo Json?     @map("additional_info")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("user_profile")
 }
@@ -92,16 +100,16 @@ model UserSession {
 }
 
 model ActivityLog {
-  id          String   @id @default(uuid())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String   @map("user_id")
-  action      String   @map("action")
-  targetType  String?  @map("target_type")
-  targetId    String?  @map("target_id")
-  description String?  @map("description")
-  metadata    Json?    @map("metadata")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
-  isDeleted   Boolean  @default(false) @map("is_deleted")
+  id          String    @id @default(uuid())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String    @map("user_id")
+  action      String    @map("action")
+  targetType  String?   @map("target_type")
+  targetId    String?   @map("target_id")
+  description String?   @map("description")
+  metadata    Json?     @map("metadata")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz
 
   @@index([createdAt])
   @@index([userId])

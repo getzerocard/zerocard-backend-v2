@@ -4,19 +4,20 @@ dotenv.config();
 
 export const config = {
   app: {
-    env: process.env.NODE_ENV || 'local',
-    name: process.env.APP_NAME || 'zerocard',
-    port: process.env.PORT || 3000,
+    env: process.env.NODE_ENV,
+    name: process.env.APP_NAME,
+    port: process.env.PORT,
   },
   database: {
-    url: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/zerocard',
+    url: process.env.DATABASE_URL,
   },
   redis: {
-    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    url: process.env.REDIS_URL,
   },
-  privy: {
-    apiKey: process.env.PRIVY_API_KEY,
-    apiSecret: process.env.PRIVY_API_SECRET,
-    authorizationPrivateKey: process.env.PRIVY_AUTHORIZATION_PRIVATE_KEY,
+  smileid: {
+    url: process.env.SMILEID_URL,
+  },
+  sudo: {
+    url: process.env.SUDO_URL,
   },
 } as const;
