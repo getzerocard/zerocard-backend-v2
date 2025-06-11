@@ -431,21 +431,21 @@ export const baseLayout: EmailLayout = {
                           </p>
 
                           <div class="social-icons" style="margin-top: 32px">
-                            <a href="https://www.linkedin.com/company/itanaafrica/">
+                            <a href="https://www.linkedin.com/company/getzerocard/">
                               <img
                                 src="https://itana-public.s3.eu-west-2.amazonaws.com/images/linkedin.png"
                                 alt="LinkedIn"
                               />
                             </a>
                             <a
-                              href="https://www.instagram.com/itanaafrica?igsh=MWIydmY4MG1uYWNueg=="
+                              href="https://www.instagram.com/getzerocard"
                             >
                               <img
                                 src="https://itana-public.s3.eu-west-2.amazonaws.com/images/instagram.png"
                                 alt="Instagram"
                               />
                             </a>
-                            <a href="https://twitter.com/ItanaAfrica">
+                            <a href="https://twitter.com/getzerocard">
                               <img
                                 src="https://itana-public.s3.eu-west-2.amazonaws.com/images/twitter.png"
                                 alt="Twitter"
