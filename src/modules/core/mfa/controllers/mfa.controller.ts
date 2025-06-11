@@ -1,16 +1,14 @@
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { SendMfaDto, VerifyMfaDto } from '../dtos';
 import { MfaService } from '../services';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiExcludeController } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/common/guards';
-
 import { MfaSwagger } from '../swagger';
 import { AuthUserEntity } from '@/modules/core/auth/entities';
 import { Request } from 'express';
 
 @Controller('mfa')
-@ApiTags('MFA')
-@ApiBearerAuth()
+@ApiExcludeController()
 @UseGuards(JwtAuthGuard)
 export class MfaController {
   constructor(private readonly mfaService: MfaService) {}

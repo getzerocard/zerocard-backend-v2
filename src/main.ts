@@ -76,22 +76,26 @@ async function bootstrap() {
   // Enable swagger in local and development environments
   if (['local', 'development'].includes(config.get<string>('APP_ENV'))) {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('Zero Card Backend')
-      .setDescription('API documentation for Zero Card Backend application')
+      .setTitle('zerocard backend api')
+      .setDescription('Backend API documentation for zerocard')
       .setVersion('1.0')
       .addBearerAuth()
       .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
 
     SwaggerModule.setup('docs', app, document, {
-      customSiteTitle: 'Zero Card Backend',
+      customSiteTitle: 'zerocard backend api',
+      customCss: `
+        .swagger-ui .models { display: none !important; }
+        .swagger-ui .opblock-tag-section.is-open .opblock-tag-section__content { display: block; }
+      `,
     });
   }
 
   const port = config.get<number>('APP_PORT', 3000);
 
   await app.listen(port, () => {
-    logger.info(`🚀 Zero Card Backend is running on PORT ${port}`);
+    logger.info(`🚀 zerocard backend api is running on PORT ${port}`);
   });
 }
 bootstrap();
