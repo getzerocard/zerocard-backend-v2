@@ -26,6 +26,7 @@ export class AuthController {
   ) {}
 
   @Post('signin')
+  @HttpCode(HttpStatus.OK)
   @AuthSwagger.signin
   signin(@Body() dto: SignInDto, @Req() req: Request) {
     const deviceInfo = req['deviceInfo'] as DeviceInfo;
@@ -33,6 +34,7 @@ export class AuthController {
   }
 
   @Post('signin/complete')
+  @HttpCode(HttpStatus.OK)
   @AuthSwagger.completeSignin
   completeSignIn(@Body() dto: CompleteSignInDto, @Req() req: Request) {
     const deviceInfo = req['deviceInfo'] as DeviceInfo;
@@ -40,6 +42,7 @@ export class AuthController {
   }
 
   @Post('oauth/:provider')
+  @HttpCode(HttpStatus.OK)
   @AuthSwagger.oauth
   async oauth(
     @Body() dto: OAuthSigninDto,
@@ -51,12 +54,14 @@ export class AuthController {
   }
 
   @Get('resend-otp')
+  @HttpCode(HttpStatus.OK)
   @AuthSwagger.resendOtp
   resendOtp(@Body() dto: ResendOtpDto) {
     return this.authService.resendOtp(dto.email);
   }
 
   @Get('refresh-token')
+  @HttpCode(HttpStatus.OK)
   @AuthSwagger.refreshToken
   refreshToken(@Req() req: Request) {
     const refreshToken = this.cookieService.extractRefreshToken(req);
