@@ -8,7 +8,7 @@ export class TransformResponseInterceptor<T> implements NestInterceptor<T, Succe
   intercept(_context: ExecutionContext, next: CallHandler): Observable<SuccessResponse<T>> {
     return next.handle().pipe(
       map((data: any) => {
-        const message = data?.message || 'Operation successful';
+        const message = data?.message || 'success';
         const meta = data?.meta;
         const payload = data?.data !== undefined ? data.data : data;
 

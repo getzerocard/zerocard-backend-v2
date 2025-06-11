@@ -8,6 +8,7 @@ export class UserEntity {
     public readonly uniqueName: string,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
+    public readonly walletsGeneratedAt: Date,
   ) {}
 
   getId(): string {

@@ -1,8 +1,9 @@
 import { HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiBody, ApiParam, ApiHeader } from '@nestjs/swagger';
 import { ApiDocs } from '@/common/decorators';
 import { ApiProperty } from '@nestjs/swagger';
 import { CompleteSignInDto, OAuthSigninDto, SignInDto } from '../dtos';
+import { SHARED_HEADERS } from '@/shared/swagger/headers.swagger';
 
 class SuccessResponseDto {
   @ApiProperty({
@@ -105,6 +106,7 @@ export const AuthSwagger = {
 
       This is the first step in the passwordless authentication flow.`,
     }),
+    ...SHARED_HEADERS,
     ApiBody({
       type: SignInDto,
       description: 'Email address for signin',
@@ -187,6 +189,7 @@ export const AuthSwagger = {
       
       The OTP expires after 10 minutes and can only be used once.`,
     }),
+    ...SHARED_HEADERS,
     ApiBody({
       type: CompleteSignInDto,
       description: 'Email and OTP verification code',
@@ -278,6 +281,7 @@ export const AuthSwagger = {
       
       Supported providers: google, apple`,
     }),
+    ...SHARED_HEADERS,
     ApiParam({
       name: 'provider',
       description: 'OAuth provider name',

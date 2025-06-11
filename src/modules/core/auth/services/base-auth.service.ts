@@ -22,6 +22,7 @@ export class BaseAuthService {
         lastName: user.lastName,
         avatar: user.avatar,
         uniqueName: user.uniqueName,
+        walletsGeneratedAt: !!user.walletsGeneratedAt,
       },
     };
   }

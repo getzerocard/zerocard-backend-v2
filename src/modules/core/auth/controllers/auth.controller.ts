@@ -27,8 +27,9 @@ export class AuthController {
 
   @Post('signin')
   @AuthSwagger.signin
-  signin(@Body() dto: SignInDto) {
-    return this.authService.signin(dto.email);
+  signin(@Body() dto: SignInDto, @Req() req: Request) {
+    const deviceInfo = req['deviceInfo'] as DeviceInfo;
+    return this.authService.signin(dto.email, deviceInfo);
   }
 
   @Post('signin/complete')

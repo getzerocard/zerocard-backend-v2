@@ -4,11 +4,11 @@ import { CompleteSignInDto, OAuthSigninDto } from '../dtos';
 import { MfaService } from '@/modules/core/mfa/services';
 import { BaseAuthService } from './base-auth.service';
 import { SessionService } from './session.service';
+import { TokenService } from './token.service';
 import { OauthProviderService } from './oauth';
 import { AuthUserEntity } from '../entities';
 import { OauthProvider } from '../types';
 import { DeviceInfo, Util } from '@/shared';
-import { TokenService } from './token.service';
 
 @Injectable()
 export class AuthService extends BaseAuthService {
@@ -22,7 +22,7 @@ export class AuthService extends BaseAuthService {
     super(sessionService);
   }
 
-  async signin(email: string) {
+  async signin(email: string, deviceInfo: DeviceInfo) {
     let user = await this.usersService.findByEmail(email);
 
     if (!user) {
@@ -33,7 +33,7 @@ export class AuthService extends BaseAuthService {
 
     await this.mfaService.sendMfaToken(authUser, 'login');
 
-    return user;
+    return this.completeAuth(authUser, deviceInfo);
   }
 
   async completeSignIn(dto: CompleteSignInDto, deviceInfo: DeviceInfo) {

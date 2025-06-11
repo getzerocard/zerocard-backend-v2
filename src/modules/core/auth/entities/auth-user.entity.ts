@@ -15,6 +15,7 @@ export class AuthUserEntity extends UserEntity {
       user.uniqueName,
       user.createdAt,
       user.updatedAt,
+      user.walletsGeneratedAt,
     );
     this.user = user;
   }

@@ -1,3 +1,3 @@
-import { AuthEventsHandler } from './auth-events.handler';
+import { MfaEventsHandler } from './mfa-events.handler';
 
-export const DefinitionHandlers = [AuthEventsHandler];
+export const DefinitionHandlers = [MfaEventsHandler];

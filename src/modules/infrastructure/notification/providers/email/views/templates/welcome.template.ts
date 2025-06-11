@@ -2,7 +2,7 @@ import { EmailTemplate } from '../interfaces/email-template.interface';
 
 export const welcomeTemplate: EmailTemplate = {
   name: 'welcome',
-  subject: 'Welcome to mystocks.africa',
+  subject: 'Welcome to zerocard',
   html: `
     <tr>
       <td>
