@@ -21,7 +21,7 @@ model User {
 }
 
 model UserAuth {
-  userId              String            @unique @map("user_id") @db.Uuid
+  userId              String            @unique @map("user_id")
   user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   isBlocked           Boolean           @default(false) @map("is_blocked")
   hasBiometricEnabled Boolean           @default(false) @map("has_biometric_enabled")
@@ -36,7 +36,7 @@ model UserAuth {
 
 model OAuthConnection {
   id             String   @id() @default(uuid())
-  userId         String   @map("user_id") @db.Uuid
+  userId         String   @map("user_id")
   provider       String   @map("provider")
   providerUserId String   @map("provider_user_id")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
@@ -69,8 +69,8 @@ model UserProfile {
 }
 
 model UserSession {
-  id                String    @id() @default(uuid()) @db.Uuid
-  userId            String    @map("user_id") @db.Uuid
+  id                String    @id() @default(uuid())
+  userId            String    @map("user_id")
   user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userAgent         String    @map("user_agent")
   deviceType        String    @map("device_type")
@@ -95,10 +95,10 @@ model UserSession {
 model ActivityLog {
   id          String   @id @default(uuid())
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String   @map("user_id") @db.Uuid
+  userId      String   @map("user_id")
   action      String   @map("action")
   targetType  String?  @map("target_type")
-  targetId    String?  @map("target_id") @db.Uuid
+  targetId    String?  @map("target_id")
   description String?  @map("description")
   metadata    Json?    @map("metadata")
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz

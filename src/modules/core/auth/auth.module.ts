@@ -8,6 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 import {
   AppleOAuthStrategy,
   AuthService,
+  CookieService,
   GoogleOAuthStrategy,
   SessionService,
   TokenService,
@@ -30,6 +31,7 @@ import {
     AuthService,
     SessionService,
     TokenService,
+    CookieService,
     OauthProviderService,
     GoogleOAuthStrategy,
     AppleOAuthStrategy,

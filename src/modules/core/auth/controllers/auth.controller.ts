@@ -1,14 +1,30 @@
 import { CompleteSignInDto, OAuthSigninDto, SignInDto } from '../dtos';
-import { Body, Controller, Param, Post, Req } from '@nestjs/common';
-import { OauthProvider } from '@/modules/core/auth/types';
-import { AuthService } from '../services';
+import { AuthService, CookieService } from '../services';
+import { AuthUserEntity } from '../entities';
+import { OauthProvider } from '../types';
 import { AuthSwagger } from '../swagger';
+import { JwtAuthGuard } from '@/common';
 import { DeviceInfo } from '@/shared';
 import { Request } from 'express';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly cookieService: CookieService,
+  ) {}
 
   @Post('signin')
   @AuthSwagger.signin
@@ -32,5 +48,28 @@ export class AuthController {
   ) {
     const deviceInfo = req['deviceInfo'] as DeviceInfo;
     return await this.authService.oauthSignin(provider, dto, deviceInfo);
+  }
+
+  @Get('refresh-token')
+  @AuthSwagger.refreshToken
+  refreshToken(@Req() req: Request) {
+    const refreshToken = this.cookieService.extractRefreshToken(req);
+    const deviceInfo = req['deviceInfo'] as DeviceInfo;
+    return this.authService.refreshToken(refreshToken, deviceInfo);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @AuthSwagger.logout
+  async logout(@Req() req: Request) {
+    const user = req.user as AuthUserEntity;
+    const deviceInfo = req['deviceInfo'] as DeviceInfo;
+
+    await this.authService.logout(user, deviceInfo);
+
+    return {
+      message: 'Logged out successfully',
+    };
   }
 }

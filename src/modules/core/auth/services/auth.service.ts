@@ -7,7 +7,8 @@ import { SessionService } from './session.service';
 import { OauthProviderService } from './oauth';
 import { AuthUserEntity } from '../entities';
 import { OauthProvider } from '../types';
-import { DeviceInfo } from '@/shared';
+import { DeviceInfo, Util } from '@/shared';
+import { TokenService } from './token.service';
 
 @Injectable()
 export class AuthService extends BaseAuthService {
@@ -16,6 +17,7 @@ export class AuthService extends BaseAuthService {
     private readonly mfaService: MfaService,
     protected readonly sessionService: SessionService,
     protected readonly oauthService: OauthProviderService,
+    private readonly tokenService: TokenService,
   ) {
     super(sessionService);
   }
@@ -65,5 +67,48 @@ export class AuthService extends BaseAuthService {
     const authUser = AuthUserEntity.fromRawData(newUser);
 
     return this.completeAuth(authUser, deviceInfo);
+  }
+
+  async refreshToken(refreshToken: string, deviceInfo: DeviceInfo) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const { userId, sessionId } = await this.tokenService.validateRefreshToken(refreshToken);
+    const validSession = await this.sessionService.validateSession(sessionId, userId, deviceInfo);
+
+    // if session is not valid, just throw an error
+    if (!validSession.success) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const session = validSession.session;
+
+    const isValidRefreshToken = await Util.validateHash(refreshToken, session.refreshToken);
+
+    if (!isValidRefreshToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const tokenPair = await this.sessionService.createSession({
+      userId: session.userId,
+      deviceInfo,
+    });
+
+    return {
+      sessionId: tokenPair.sessionId,
+      accessToken: tokenPair.tokenPair.accessToken,
+      refreshToken: tokenPair.tokenPair.refreshToken,
+    };
+  }
+
+  async logout(user: AuthUserEntity, deviceInfo: DeviceInfo) {
+    const session = await this.sessionService.findSessionByFingerprint(
+      user.id,
+      deviceInfo.deviceFingerprint,
+    );
+    if (session) {
+      await this.sessionService.revoke(session.id, user.id);
+    }
   }
 }

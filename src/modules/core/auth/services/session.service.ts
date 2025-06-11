@@ -2,10 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PinoLogger } from 'nestjs-pino';
 import { CacheService, PrismaService } from '@/infrastructure';
-import { Util } from '@/shared';
+import { DeviceInfo, Util } from '@/shared';
 import { UserSession } from '@prisma/client';
 import { TokenService } from './token.service';
-import { CreateSessionParams, CreateSessionResponse } from '../types';
+import {
+  CreateSessionParams,
+  CreateSessionResponse,
+  SessionValidationReason,
+  ValidateSessionResponse,
+} from '../types';
 
 @Injectable()
 export class SessionService {
@@ -96,6 +101,33 @@ export class SessionService {
         this.blacklistSession(sessionId),
       ]);
     }
+  }
+
+  async validateSession(
+    sessionId: string,
+    userId: string,
+    deviceInfo: DeviceInfo,
+  ): Promise<ValidateSessionResponse> {
+    const session = await this.database.userSession.findUnique({
+      where: {
+        id: sessionId,
+        userId,
+        deviceFingerprint: deviceInfo.deviceFingerprint,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!session) return { success: false, reason: SessionValidationReason.NOT_FOUND };
+
+    if (!session.isActive && session.revokedAt)
+      return { success: false, reason: SessionValidationReason.NOT_FOUND };
+
+    if (session.deviceFingerprint !== deviceInfo.deviceFingerprint)
+      return { success: false, reason: SessionValidationReason.FINGERPRINT_MISMATCH };
+
+    return { success: true, session };
   }
 
   async isSessionBlacklisted(sessionId: string): Promise<boolean> {

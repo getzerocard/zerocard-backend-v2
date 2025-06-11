@@ -396,4 +396,142 @@ export const AuthSwagger = {
       type: ErrorResponseDto,
     }),
   ),
+
+  refreshToken: ApiDocs(
+    ApiOperation({
+      summary: 'Refresh authentication token',
+      description: `Refresh the user's access token using a valid refresh token stored in cookies.
+      
+      This endpoint will:
+      1. Extract the refresh token from HTTP-only cookies
+      2. Validate the refresh token and device fingerprint
+      3. Generate a new access token and refresh token pair
+      4. Return the new authentication tokens
+      
+      The refresh token is automatically included in the request via HTTP-only cookies.
+      No request body is required.`,
+    }),
+    ApiResponse({
+      status: HttpStatus.OK,
+      description: 'Token refresh successful',
+      type: AuthResponseDto,
+      schema: {
+        example: {
+          status: 'success',
+          sessionId: 'session_12345',
+          accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          user: {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            email: 'john.doe@example.com',
+            firstName: 'John',
+            lastName: 'Doe',
+            avatar: 'https://example.com/avatar.jpg',
+            uniqueName: 'john_doe_123',
+          },
+        },
+      },
+    }),
+    ApiResponse({
+      status: HttpStatus.UNAUTHORIZED,
+      description: 'Invalid or expired refresh token',
+      type: ErrorResponseDto,
+      schema: {
+        examples: {
+          expiredToken: {
+            summary: 'Expired Refresh Token',
+            value: {
+              status: 'error',
+              error: {
+                message: 'Refresh token has expired',
+                errorType: 'AuthenticationError',
+              },
+            },
+          },
+          invalidToken: {
+            summary: 'Invalid Refresh Token',
+            value: {
+              status: 'error',
+              error: {
+                message: 'Invalid refresh token',
+                errorType: 'AuthenticationError',
+              },
+            },
+          },
+          missingToken: {
+            summary: 'Missing Refresh Token',
+            value: {
+              status: 'error',
+              error: {
+                message: 'No refresh token provided',
+                errorType: 'AuthenticationError',
+              },
+            },
+          },
+        },
+      },
+    }),
+    ApiResponse({
+      status: HttpStatus.BAD_REQUEST,
+      description: 'Invalid device information',
+      type: ErrorResponseDto,
+      schema: {
+        example: {
+          status: 'error',
+          error: {
+            message: 'Invalid device information',
+            errorType: 'ValidationError',
+          },
+        },
+      },
+    }),
+    ApiResponse({
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      description: 'Internal server error',
+      type: ErrorResponseDto,
+    }),
+  ),
+
+  logout: ApiDocs(
+    ApiOperation({
+      summary: 'Logout user',
+      description: `Logout the authenticated user and invalidate their session.
+      
+      This endpoint will:
+      1. Verify the user's authentication via JWT token
+      2. Invalidate the current user session
+      3. Clear authentication tokens and cookies
+      4. Log the logout activity with device information
+      
+      Requires authentication via JWT token in Authorization header.`,
+    }),
+    ApiResponse({
+      status: HttpStatus.OK,
+      description: 'Logout successful',
+      schema: {
+        example: {
+          message: 'Logged out successfully',
+        },
+      },
+    }),
+    ApiResponse({
+      status: HttpStatus.UNAUTHORIZED,
+      description: 'Authentication required',
+      type: ErrorResponseDto,
+      schema: {
+        example: {
+          status: 'error',
+          error: {
+            message: 'Unauthorized',
+            errorType: 'AuthenticationError',
+          },
+        },
+      },
+    }),
+    ApiResponse({
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      description: 'Internal server error',
+      type: ErrorResponseDto,
+    }),
+  ),
 };
