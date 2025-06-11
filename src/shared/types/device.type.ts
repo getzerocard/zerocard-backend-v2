@@ -15,9 +15,7 @@ export interface DeviceHeaders {
 }
 
 export interface ParsedDeviceInfo {
-  browser: string; // e.g. "Chrome"
   os: string; // e.g. "Windows"
-  deviceType: 'mobile' | 'tablet' | 'desktop' | 'unknown';
   ipPrefix: string; // e.g. "192"
   fullIp: string; // e.g. "192.168.1.1"
   timezone: string; // e.g. "Africa/Lagos"

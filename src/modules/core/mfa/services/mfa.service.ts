@@ -1,7 +1,7 @@
+import { Send2FATokenEvent } from '@/modules/infrastructure/events/definitions';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { MfaContext } from '@/modules/core/mfa/dtos';
 import { EventBusService } from '@/modules/infrastructure/events';
-import { Send2FAMfaTokenEvent } from '@/modules/infrastructure/events/definitions';
+import { MfaContext } from '@/modules/core/mfa/dtos';
 import { CacheService } from '@/infrastructure';
 import { UserEntity, Util } from '@/shared';
 import { PinoLogger } from 'nestjs-pino';
@@ -32,7 +32,7 @@ export class MfaService {
   async sendMfaToken(user: UserEntity, context: MfaContext): Promise<void> {
     const token = await this.generateToken(user.email, context);
 
-    this.eventBus.publish(new Send2FAMfaTokenEvent(user.id, user.email, token));
+    this.eventBus.publish(new Send2FATokenEvent(user.id, user.email, user.firstName, token));
 
     return;
   }
@@ -53,6 +53,6 @@ export class MfaService {
 
     await this.cache.delete(cacheKey);
 
-    return true;
+    return;
   }
 }

@@ -1,7 +1,7 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { EventBusService } from '@/modules/infrastructure/events';
 import { UsersService } from '@/modules/core/users/services';
 import { CompleteSignInDto, OAuthSigninDto } from '../dtos';
-import { MfaService } from '@/modules/core/mfa/services';
 import { BaseAuthService } from './base-auth.service';
 import { SessionService } from './session.service';
 import { TokenService } from './token.service';
@@ -9,20 +9,22 @@ import { OauthProviderService } from './oauth';
 import { AuthUserEntity } from '../entities';
 import { OauthProvider } from '../types';
 import { DeviceInfo, Util } from '@/shared';
+import { CacheService } from '@/infrastructure';
 
 @Injectable()
 export class AuthService extends BaseAuthService {
   constructor(
     private readonly usersService: UsersService,
-    private readonly mfaService: MfaService,
     protected readonly sessionService: SessionService,
     protected readonly oauthService: OauthProviderService,
     private readonly tokenService: TokenService,
+    protected readonly cache: CacheService,
+    protected readonly eventBus: EventBusService,
   ) {
-    super(sessionService);
+    super(sessionService, cache, eventBus);
   }
 
-  async signin(email: string) {
+  async signin(email: string, deviceInfo: DeviceInfo) {
     let user = await this.usersService.findByEmail(email);
 
     if (!user) {
@@ -31,7 +33,7 @@ export class AuthService extends BaseAuthService {
 
     const authUser = AuthUserEntity.fromRawData(user);
 
-    await this.mfaService.sendMfaToken(authUser, 'login');
+    await this.sendSiginInOtp(authUser, deviceInfo);
 
     return {
       firstName: user.firstName,
@@ -45,10 +47,10 @@ export class AuthService extends BaseAuthService {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new BadRequestException('Invalid credentials');
     }
 
-    await this.mfaService.verifyToken(email, 'login', code);
+    // await this.mfaService.verifyToken(email, 'login', code);
 
     return this.completeAuth(AuthUserEntity.fromRawData(user), deviceInfo);
   }
@@ -62,7 +64,7 @@ export class AuthService extends BaseAuthService {
       await this.oauthService.validateExistingAuth(authUser, provider);
 
       if (!this.oauthService.isUserConnectedToProvider(authUser, provider)) {
-        throw new UnauthorizedException('User is not connected to this provider');
+        throw new BadRequestException('User is not connected to this provider');
       }
       return this.completeAuth(authUser, deviceInfo);
     }
@@ -76,10 +78,10 @@ export class AuthService extends BaseAuthService {
   async resendOtp(email: string) {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new BadRequestException('User not found');
     }
     const authUser = AuthUserEntity.fromRawData(user);
-    await this.mfaService.sendMfaToken(authUser, 'login');
+    // await this.mfaService.sendMfaToken(authUser, 'login');
   }
 
   async refreshToken(refreshToken: string, deviceInfo: DeviceInfo) {

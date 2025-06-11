@@ -1,4 +1,2 @@
-export * from './account-verification.template';
-export * from './forgot-password.template';
-export * from './password-changed.template';
+export * from './signin-otp.template';
 export * from './welcome.template';

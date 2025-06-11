@@ -1,1 +1,2 @@
-export const SEND_2FA_MFA_TOKEN = 'send.2fa.mfa.token';
+export const SEND_SIGN_IN_OTP = 'send.signin.otp';
+export const SEND_2FA_OTP = 'send.2fa.otp';

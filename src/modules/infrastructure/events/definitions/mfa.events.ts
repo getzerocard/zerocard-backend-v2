@@ -1,8 +1,8 @@
-import { SEND_2FA_MFA_TOKEN } from '@/shared';
+import { SEND_2FA_OTP } from '@/shared';
 import { Event } from '../interfaces';
 
-export class Send2FAMfaTokenEvent implements Event {
-  readonly eventName = SEND_2FA_MFA_TOKEN;
+export class Send2FATokenEvent implements Event {
+  readonly eventName = SEND_2FA_OTP;
 
   constructor(
     public readonly aggregateId: string,
@@ -12,4 +12,4 @@ export class Send2FAMfaTokenEvent implements Event {
   ) {}
 }
 
-export const MfaEvents = [Send2FAMfaTokenEvent];
+export const MfaEvents = [Send2FATokenEvent];

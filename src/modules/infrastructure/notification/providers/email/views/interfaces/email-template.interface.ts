@@ -1,5 +1,4 @@
 export interface EmailTemplateData {
-  header: string;
   greeting: string;
   userName: string;
   closingMessage: string;

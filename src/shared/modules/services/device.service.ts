@@ -19,7 +19,7 @@ export class DeviceService {
   }
 
   private generateDeviceFingerprint(parsedUserAgent: ParsedDeviceInfo) {
-    const fingerprintString = `${parsedUserAgent.browser}|${parsedUserAgent.os}|${parsedUserAgent.deviceType}|${parsedUserAgent.ipPrefix}|${parsedUserAgent.deviceId}`;
+    const fingerprintString = `${parsedUserAgent.os}|${parsedUserAgent.ipPrefix}|${parsedUserAgent.deviceId}`;
 
     return this.hash(fingerprintString);
   }
@@ -49,10 +49,7 @@ export class DeviceService {
     const fallbackDeviceName = this.generateFallbackDeviceName(deviceHeaders.userAgent);
     const { userAgent, ipAddress, timezone, deviceId, deviceName, appVersion } = deviceHeaders;
     const parser = new UAParser(userAgent);
-    const browser = parser.getBrowser().name || 'unknown';
     const os = parser.getOS().name || 'unknown';
-    const rawType = parser.getDevice().type as DeviceInfo['deviceType'];
-    const deviceType: DeviceInfo['deviceType'] = rawType || 'desktop';
     // Use only the first octet of IP for privacy & stability
     const ipSegment = this.normalizeIp(ipAddress);
     const resolvedTimezone = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -69,9 +66,7 @@ export class DeviceService {
     }
 
     return {
-      browser,
       os,
-      deviceType,
       ipPrefix: ipSegment,
       fullIp: ipAddress,
       timezone: resolvedTimezone,

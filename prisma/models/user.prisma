@@ -73,7 +73,6 @@ model UserSession {
   userId            String    @map("user_id")
   user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userAgent         String    @map("user_agent")
-  deviceType        String    @map("device_type")
   operatingSystem   String    @map("operating_system")
   ipAddress         String    @map("ip_address")
   isActive          Boolean   @default(false)

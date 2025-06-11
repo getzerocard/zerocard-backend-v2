@@ -1,12 +1,12 @@
-import { accountVerificationTemplate } from '../views';
 import { NotificationEvent } from '../../../interfaces';
 import { EmailTemplateData } from '../views/interfaces';
-import { SEND_2FA_MFA_TOKEN } from '@/shared';
+import { signInOtpTemplate } from '../views';
+import { SEND_SIGN_IN_OTP } from '@/shared';
 
 export const getTemplateForEvent = (eventName: string) => {
   switch (eventName) {
-    case SEND_2FA_MFA_TOKEN:
-      return accountVerificationTemplate;
+    case SEND_SIGN_IN_OTP:
+      return signInOtpTemplate;
     default:
       throw new Error(`No template found for event: ${eventName}`);
   }
@@ -16,9 +16,8 @@ export const getTemplateForEvent = (eventName: string) => {
  * Preview text is the text that is displayed in the email preview.
  */
 export const getDefaultTemplateData = (userName: string): EmailTemplateData => ({
-  header: '',
-  greeting: 'Hi', // this is the greeting message in the email, e.g Hi, Hello, Dear, etc.
-  userName, // the name of the email recipient
+  greeting: 'Hey',
+  userName: '', // the name of the email recipient
   closingMessage: 'Warm Regards,', // this is the closing message in the email
   signature: 'Team at zerocard', // this is the signature of the email, can be the company name or a person's name, etc.
 });
@@ -27,11 +26,14 @@ export const getTemplateData = (event: NotificationEvent): EmailTemplateData => 
   const defaultTemplateData = getDefaultTemplateData(event.userName);
 
   switch (event.eventName) {
-    case SEND_2FA_MFA_TOKEN:
+    case SEND_SIGN_IN_OTP:
+      console.log('EVENT >>>', event);
       return {
         ...defaultTemplateData,
-        header: 'Your OTP Code',
-        code: event.otp,
+        otp: event.otp,
+        loginTime: event.loginTime,
+        loginLocation: event.loginLocation,
+        loginIP: event.loginIP,
       };
     default:
       return defaultTemplateData;

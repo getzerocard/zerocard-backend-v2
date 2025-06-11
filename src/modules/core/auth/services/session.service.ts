@@ -36,8 +36,6 @@ export class SessionService {
 
     const deviceData = {
       userAgent: deviceInfo.userAgent,
-      deviceType: deviceInfo.deviceType,
-      browserName: deviceInfo.browser,
       operatingSystem: deviceInfo.os,
       ipAddress: deviceInfo.ipPrefix,
       deviceFingerprint: deviceInfo.deviceFingerprint,
