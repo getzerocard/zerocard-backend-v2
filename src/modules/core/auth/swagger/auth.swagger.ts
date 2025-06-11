@@ -106,7 +106,6 @@ export const AuthSwagger = {
 
       This is the first step in the passwordless authentication flow.`,
     }),
-    ...SHARED_HEADERS,
     ApiBody({
       type: SignInDto,
       description: 'Email address for signin',

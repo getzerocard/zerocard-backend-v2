@@ -22,7 +22,7 @@ export class AuthService extends BaseAuthService {
     super(sessionService);
   }
 
-  async signin(email: string, deviceInfo: DeviceInfo) {
+  async signin(email: string) {
     let user = await this.usersService.findByEmail(email);
 
     if (!user) {
@@ -33,7 +33,11 @@ export class AuthService extends BaseAuthService {
 
     await this.mfaService.sendMfaToken(authUser, 'login');
 
-    return this.completeAuth(authUser, deviceInfo);
+    return {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+    };
   }
 
   async completeSignIn(dto: CompleteSignInDto, deviceInfo: DeviceInfo) {
@@ -119,5 +123,6 @@ export class AuthService extends BaseAuthService {
     if (session) {
       await this.sessionService.revoke(session.id, user.id);
     }
+    return;
   }
 }

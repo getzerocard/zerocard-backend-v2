@@ -27,9 +27,8 @@ export class AuthController {
 
   @Post('signin')
   @AuthSwagger.signin
-  signin(@Body() dto: SignInDto, @Req() req: Request) {
-    const deviceInfo = req['deviceInfo'] as DeviceInfo;
-    return this.authService.signin(dto.email, deviceInfo);
+  signin(@Body() dto: SignInDto) {
+    return this.authService.signin(dto.email);
   }
 
   @Post('signin/complete')
@@ -72,10 +71,6 @@ export class AuthController {
     const user = req.user as AuthUserEntity;
     const deviceInfo = req['deviceInfo'] as DeviceInfo;
 
-    await this.authService.logout(user, deviceInfo);
-
-    return {
-      message: 'Logged out successfully',
-    };
+    return await this.authService.logout(user, deviceInfo);
   }
 }
