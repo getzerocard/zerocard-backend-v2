@@ -52,7 +52,7 @@ export const baseLayout: EmailLayout = {
           html,
           body {
             margin: 0 auto !important;
-            padding: 40px 0 0 0 !important;
+            padding: 60px 0 0 0 !important;
             height: 100% !important;
             width: 100% !important;
             background: #f0f2f5 !important;
@@ -92,7 +92,7 @@ export const baseLayout: EmailLayout = {
           }
           .email-container {
             max-width: 600px;
-            margin: 0 auto;
+            margin: 20px auto 0 auto;
             background: #ffffff;
             border-radius: 12px;
             overflow: hidden;
@@ -167,7 +167,7 @@ export const baseLayout: EmailLayout = {
             font-size: 36px;
             font-weight: 700;
             color: #40ff00;
-            letter-spacing: 10px;
+            letter-spacing: 15px;
             margin: 0;
           }
           .otp-info {
@@ -284,7 +284,7 @@ export const baseLayout: EmailLayout = {
           }
           @media screen and (max-width: 600px) {
             .email-container {
-              margin: 0;
+              margin: 20px 0 0 0;
               border-radius: 0;
             }
             .otp-code {
@@ -294,7 +294,7 @@ export const baseLayout: EmailLayout = {
           }
         </style>
       </head>
-      <body style="word-spacing: normal; background: #f0f2f5">
+      <body style="margin:0; padding:0; background: #f0f2f5">
         <table
           align="center"
           role="presentation"
@@ -302,8 +302,12 @@ export const baseLayout: EmailLayout = {
           cellpadding="0"
           cellspacing="0"
           width="100%"
-          style="padding: 40px 40px 80px 40px; background: #f0f2f5"
+          style="padding:0; background: #f0f2f5"
         >
+          <!-- Spacer for top padding (works in all clients) -->
+          <tr>
+            <td height="32" style="height:32px; line-height:32px; font-size:0;">&nbsp;</td>
+          </tr>
           <tr>
             <td align="center">
               <table
@@ -352,16 +356,21 @@ export const baseLayout: EmailLayout = {
                       <tr>
                         <td align="center">
                           <div class="logo">
-                            <img
-                              src="https://zcrd.s3.us-east-1.amazonaws.com/zerocard.png"
-                              alt="zerocard"
-                              style="
-                                height: 40px;
-                                width: auto;
-                                display: block;
-                                margin: 0 auto;
-                              "
-                            />
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                              <tr>
+                                <td
+                                  style="
+                                    background: url('https://zcrd.s3.us-east-1.amazonaws.com/zerocard.png') no-repeat center/contain;
+                                    width: 120px;
+                                    height: 40px;
+                                    border-radius: 8px;
+                                  "
+                                  aria-label="zerocard logo"
+                                >
+                                  &nbsp;
+                                </td>
+                              </tr>
+                            </table>
                           </div>
                         </td>
                       </tr>
