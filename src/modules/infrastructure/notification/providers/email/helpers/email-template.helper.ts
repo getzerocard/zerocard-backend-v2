@@ -27,7 +27,6 @@ export const getTemplateData = (event: NotificationEvent): EmailTemplateData => 
 
   switch (event.eventName) {
     case SEND_SIGN_IN_OTP:
-      console.log('EVENT >>>', event);
       return {
         ...defaultTemplateData,
         otp: event.otp,
