@@ -1,3 +1,5 @@
+import { KycStatus, User } from '@prisma/client';
+
 export class UserEntity {
   constructor(
     public readonly id: string,
@@ -9,7 +11,23 @@ export class UserEntity {
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
     public readonly walletsGeneratedAt: Date,
+    public readonly kycStatus: KycStatus,
   ) {}
+
+  static fromRawData(user: User): UserEntity {
+    return new UserEntity(
+      user.id,
+      user.email,
+      user.firstName,
+      user.lastName,
+      user.avatar,
+      user.uniqueName,
+      user.createdAt,
+      user.updatedAt,
+      user.walletsGeneratedAt,
+      user.kycStatus,
+    );
+  }
 
   getId(): string {
     return this.id;
@@ -41,12 +59,13 @@ export class UserEntity {
 
   getProfile() {
     return {
-      id: this.id,
       email: this.email,
       firstName: this.firstName,
       lastName: this.lastName,
       avatar: this.avatar,
       uniqueName: this.uniqueName,
+      walletsGenerated: !!this.walletsGeneratedAt,
+      kycStatus: this.kycStatus,
     };
   }
 }

@@ -75,7 +75,6 @@ export class BaseAuthService {
 
     const parts = formatter.formatToParts(date);
     const partMap = Object.fromEntries(parts.map(part => [part.type, part.value]));
-
     const day = parseInt(partMap.day);
     const ordinalSuffix = getOrdinalSuffix(day);
 

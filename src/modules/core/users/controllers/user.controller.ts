@@ -6,11 +6,11 @@ import { UserEntity } from '@/shared';
 
 @Controller()
 @UseGuards(JwtAuthGuard)
-export class UsersController {
+export class UserController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get('profile')
-  async getUsers(@Req() req: Request) {
+  @Get('me')
+  async getUser(@Req() req: Request) {
     const user = req.user as UserEntity;
   }
 }

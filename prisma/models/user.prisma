@@ -1,23 +1,29 @@
 model User {
-  id                 String        @id @default(uuid())
-  firstName          String?       @map("first_name")
-  lastName           String?       @map("last_name")
-  uniqueName         String?       @unique @map("unique_name")
-  avatar             String?       @map("avatar")
-  email              String        @unique @map("email")
-  walletsGeneratedAt DateTime?     @map("wallets_generated_at") @db.Timestamptz
-  kycStatus          KycStatus     @default(NOT_STARTED) @map("kyc_status")
-  deletedAt          DateTime?     @map("deleted_at") @db.Timestamptz
-  createdAt          DateTime      @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt          DateTime      @updatedAt @map("updated_at") @db.Timestamptz
-  userAuth           UserAuth?
-  profile            UserProfile?
+  id                 String            @id @default(uuid())
+  firstName          String?           @map("first_name")
+  lastName           String?           @map("last_name")
+  uniqueName         String?           @unique @map("unique_name")
+  avatar             String?           @map("avatar")
+  email              String            @unique @map("email")
+  walletsGeneratedAt DateTime?         @map("wallets_generated_at") @db.Timestamptz
+  kycStatus          KycStatus         @default(NOT_STARTED) @map("kyc_status")
+  gender             String?           @map("gender")
+  dialingCode        String?           @map("dialing_code")
+  phoneNumber        String?           @map("phone_number")
+  dateOfBirth        DateTime?         @map("date_of_birth") @db.Timestamptz
+  additionalInfo     Json?             @map("additional_info")
+  deletedAt          DateTime?         @map("deleted_at") @db.Timestamptz
+  emailVerifiedAt    DateTime?         @map("email_verified_at") @db.Timestamptz
+  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+  oauthConnections   OAuthConnection[]
   activityLogs       ActivityLog[]
   wallets            Wallet[]
   transactions       Transaction[]
   sessions           UserSession[]
+  address            UserAddress?
 
-  @@index([email])
+  @@index([email, uniqueName, phoneNumber, dateOfBirth, gender, dialingCode, kycStatus, walletsGeneratedAt])
   @@map("users")
 }
 
@@ -28,20 +34,6 @@ enum KycStatus {
   FAILED      @map("failed")
 }
 
-model UserAuth {
-  userId              String            @unique @map("user_id")
-  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  isBlocked           Boolean           @default(false) @map("is_blocked")
-  hasBiometricEnabled Boolean           @default(false) @map("has_biometric_enabled")
-  emailVerifiedAt     DateTime?         @map("email_verified_at") @db.Timestamptz
-  createdAt           DateTime          @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt           DateTime          @updatedAt @map("updated_at") @db.Timestamptz
-  oauthConnections    OAuthConnection[]
-
-  @@index([userId])
-  @@map("user_auth")
-}
-
 model OAuthConnection {
   id             String   @id() @default(uuid())
   userId         String   @map("user_id")
@@ -49,31 +41,29 @@ model OAuthConnection {
   providerUserId String   @map("provider_user_id")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  user           UserAuth @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, provider])
+  @@index([userId, provider])
+  @@index([providerUserId])
   @@map("oauth_connections")
 }
 
-model UserProfile {
-  id             String    @id @default(uuid())
-  userId         String    @unique @map("user_id")
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  profilePicture String?   @map("profile_picture")
-  bio            String?   @map("bio") @db.Text
-  country        String?   @map("country")
-  city           String?   @map("city")
-  state          String?   @map("state")
-  address        String?   @map("address")
-  zipCode        String?   @map("zip_code")
-  dialingCode    String?   @map("dialing_code")
-  phoneNumber    String?   @map("phone_number")
-  gender         String?   @map("gender")
-  dateOfBirth    DateTime? @map("date_of_birth") @db.Timestamptz
-  additionalInfo Json?     @map("additional_info")
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+model UserAddress {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address   String   @map("address")
+  state     String?  @map("state")
+  city      String?  @map("city")
+  country   String?  @map("country")
+  zipCode   String?  @map("zip_code")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  @@map("user_profile")
+  @@index([userId])
+  @@index([country, state, city, zipCode])
+  @@map("user_addresses")
 }
 
 model UserSession {
@@ -94,8 +84,8 @@ model UserSession {
   revokedAt         DateTime? @map("revoked_at") @db.Timestamptz
 
   @@unique([userId, deviceFingerprint])
+  @@index([userId, isActive, deviceFingerprint])
   @@index([userId])
-  @@index([userId, isActive])
   @@map("user_sessions")
 }
 
@@ -111,8 +101,7 @@ model ActivityLog {
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz
 
-  @@index([createdAt])
-  @@index([userId])
+  @@index([userId, createdAt])
   @@index([targetType, targetId])
   @@map("activity_logs")
 }

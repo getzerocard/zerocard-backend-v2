@@ -11,6 +11,13 @@ export class UsersService {
     return await this.usersRepository.create(email);
   }
 
+  async getUser(userId: string) {
+    const user = await this.usersRepository.findUser({ id: userId });
+    // const userEntity
+
+    return user;
+  }
+
   async getUserProfile(userId: string) {
     const user = await this.usersRepository.findUser({ id: userId });
   }
