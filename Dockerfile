@@ -1,16 +1,19 @@
   ###################
   # BUILD STAGE
   ###################
-  FROM node:20-alpine AS builder
+  FROM --platform=linux/amd64 node:20-alpine AS builder
 
   WORKDIR /app
   
   # Install pnpm and required build tools
-  RUN npm install -g pnpm
+  RUN apk add --no-cache python3 make g++ git && \
+      npm install -g pnpm
   
-  # Copy and install deps
+  # Copy package files
   COPY package.json pnpm-lock.yaml ./
-  RUN pnpm install --no-frozen-lockfile
+  
+  # Install dependencies
+  RUN pnpm install --frozen-lockfile
   
   # Copy rest of the app
   COPY . .
@@ -22,7 +25,7 @@
   # PRODUCTION STAGE
   ###################
   
-  FROM node:20-alpine AS production
+  FROM --platform=linux/amd64 node:20-alpine AS production
   
   WORKDIR /app
   
