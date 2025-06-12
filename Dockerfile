@@ -6,8 +6,7 @@
   WORKDIR /app
   
   # Install pnpm and required build tools
-  RUN apk add --no-cache python3 make g++ git && \
-      npm install -g pnpm
+  RUN npm install -g pnpm
   
   # Copy and install deps
   COPY package.json pnpm-lock.yaml ./
