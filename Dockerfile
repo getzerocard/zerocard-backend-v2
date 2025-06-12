@@ -1,42 +1,42 @@
-  ###################
-  # BUILD STAGE
-  ###################
-  FROM --platform=linux/amd64 node:20-alpine AS builder
+# ---------- Build Stage ----------
+  FROM node:20-alpine AS builder
 
   WORKDIR /app
   
   # Install pnpm
-  RUN npm install -g pnpm
+  RUN npm install -g pnpm@8.10.2
   
-  # Copy package files
+  # Copy and install dependencies
   COPY package.json pnpm-lock.yaml ./
-  
-  # Install dependencies
   RUN pnpm install --frozen-lockfile
   
-  # Copy rest of the app
+  # Copy source code
   COPY . .
   
-  # Generate Prisma and build app
-  RUN npx prisma generate && pnpm build
+  # Generate Prisma client and build app
+  RUN npx prisma generate
+  RUN pnpm build
   
-  ###################
-  # PRODUCTION STAGE
-  ###################
-  
-  FROM --platform=linux/amd64 node:20-alpine AS production
+  # ---------- Production Stage ----------
+  FROM node:20-alpine AS production
   
   WORKDIR /app
   
-  # Copy package files and built native modules from builder
+  # Install pnpm
+  RUN npm install -g pnpm@8.10.2
+  
+  # Copy only what's needed from the builder
   COPY package.json pnpm-lock.yaml ./
   COPY --from=builder /app/node_modules ./node_modules
-  COPY --from=builder /app/prisma ./prisma
   COPY --from=builder /app/dist ./dist
+  COPY --from=builder /app/prisma ./prisma
   
   # Generate Prisma client in production
   RUN npx prisma generate
   
+  # Expose app port
   EXPOSE 3000
   
-CMD ["pnpm", "run", "start:prod"]
+  # Start the app
+  CMD ["pnpm", "run", "start:prod"]
+  
