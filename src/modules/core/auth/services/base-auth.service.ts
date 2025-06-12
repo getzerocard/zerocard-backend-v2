@@ -92,7 +92,7 @@ export class BaseAuthService {
         user.email,
         token,
         formattedTime,
-        deviceInfo.location,
+        deviceInfo.timezone,
         deviceInfo.fullIp,
         user.firstName || '',
       ),
