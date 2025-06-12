@@ -1,17 +1,4 @@
 services:
-  app:
-    container_name: zerocard_app
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - '3000:3000'
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-      - redis
-
   postgres:
     container_name: zerocard_postgres
     image: postgres:latest
