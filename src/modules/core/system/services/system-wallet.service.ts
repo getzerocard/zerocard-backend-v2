@@ -10,4 +10,10 @@ export class SystemWalletService {
       where: { isActive },
     });
   }
+
+  async getWalletById(id: string) {
+    return this.database.systemWallet.findUnique({
+      where: { id },
+    });
+  }
 }

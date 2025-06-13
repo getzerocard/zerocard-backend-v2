@@ -11,7 +11,9 @@ export class UsersService {
 
   async create(email: string) {
     const newUser = await this.usersRepository.create(email);
+
     this.eventBus.publish(new UserCreatedEvent(newUser.id, newUser.email, newUser.firstName));
+
     return newUser;
   }
 

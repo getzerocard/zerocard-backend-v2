@@ -4,7 +4,7 @@ model Wallet {
   name             String             @map("name") // e.g. “User 123 USD Wallet”
   ownerId          String             @map("owner_id")
   owner            User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  chain            WalletChain        @default(ETHEREUM) @map("chain")
+  chain            WalletChain        @map("chain")
   providerWalletId String             @map("provider_wallet_id")
   address          String             @unique @map("address")
   balance          Decimal            @default(0.0) @map("balance")
@@ -21,14 +21,14 @@ model Wallet {
 }
 
 enum WalletChain {
-  ETHEREUM @map("ethereum")
-  BNB      @map("bnb")
-  POLYGON  @map("polygon")
-  TRON     @map("tron")
-  BASE     @map("base")
-  ARBITRUM @map("arbitrum")
-  OPTIMISM @map("optimism")
-  SOLANA   @map("solana")
-  CELO     @map("celo")
-  LISK     @map("lisk")
+  ethereum @map("ethereum")
+  bnb      @map("bnb")
+  polygon  @map("polygon")
+  tron     @map("tron")
+  base     @map("base")
+  arbitrum @map("arbitrum")
+  optimism @map("optimism")
+  solana   @map("solana")
+  celo     @map("celo")
+  lisk     @map("lisk")
 }
