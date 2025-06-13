@@ -19,6 +19,9 @@ export const config = {
     apiKey: process.env.SMILEID_API_KEY,
     partnerId: process.env.SMILEID_PARTNER_ID,
   },
+  blockradar: {
+    apiKey: process.env.BLOCKRADAR_API_KEY,
+  },
   sudo: {
     url: process.env.SUDO_URL,
   },
