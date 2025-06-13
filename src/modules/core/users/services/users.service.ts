@@ -6,9 +6,10 @@ export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async create(email: string) {
+    const newUser = await this.usersRepository.create(email);
     // TODO: create user usdc wallet, and other necessary setups
     // TODO: use a queue to handle this
-    return await this.usersRepository.create(email);
+    return newUser;
   }
 
   async getUser(userId: string) {

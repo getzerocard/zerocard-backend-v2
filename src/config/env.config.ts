@@ -16,6 +16,8 @@ export const config = {
   },
   smileid: {
     url: process.env.SMILEID_URL,
+    apiKey: process.env.SMILEID_API_KEY,
+    partnerId: process.env.SMILEID_PARTNER_ID,
   },
   sudo: {
     url: process.env.SUDO_URL,

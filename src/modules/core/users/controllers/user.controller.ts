@@ -12,5 +12,6 @@ export class UserController {
   @Get('me')
   async getUser(@Req() req: Request) {
     const user = req.user as UserEntity;
+    const response = await this.usersService.getUser(user.id);
   }
 }
