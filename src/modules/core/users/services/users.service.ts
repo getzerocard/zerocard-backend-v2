@@ -1,14 +1,17 @@
+import { EventBusService, UserCreatedEvent } from '@/modules/infrastructure/events';
 import { UsersRepository } from '../repositories';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly eventBus: EventBusService,
+  ) {}
 
   async create(email: string) {
     const newUser = await this.usersRepository.create(email);
-    // TODO: create user usdc wallet, and other necessary setups
-    // TODO: use a queue to handle this
+    this.eventBus.publish(new UserCreatedEvent(newUser.id, newUser.email, newUser.firstName));
     return newUser;
   }
 
@@ -26,4 +29,6 @@ export class UsersService {
   async findByEmail(email: string) {
     return await this.usersRepository.findUser({ email });
   }
+
+  async updateUser() {}
 }

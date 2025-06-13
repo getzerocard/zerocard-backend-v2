@@ -1,0 +1,34 @@
+model Wallet {
+  id               String             @id @default(uuid())
+  identifier       String             @unique @map("identifier") // A human-readable identifier, e.g. “User123_USD_Wallet”
+  name             String             @map("name") // e.g. “User 123 USD Wallet”
+  ownerId          String             @map("owner_id")
+  owner            User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  chain            WalletChain        @default(ETHEREUM) @map("chain")
+  providerWalletId String             @map("provider_wallet_id")
+  address          String             @unique @map("address")
+  balance          Decimal            @default(0.0) @map("balance")
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  entries          TransactionEntry[]
+
+  @@index([identifier])
+  @@index([ownerId])
+  @@index([address])
+  @@index([chain])
+  @@index([providerWalletId])
+  @@map("wallets")
+}
+
+enum WalletChain {
+  ETHEREUM @map("ethereum")
+  BNB      @map("bnb")
+  POLYGON  @map("polygon")
+  TRON     @map("tron")
+  BASE     @map("base")
+  ARBITRUM @map("arbitrum")
+  OPTIMISM @map("optimism")
+  SOLANA   @map("solana")
+  CELO     @map("celo")
+  LISK     @map("lisk")
+}

@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PinoLogger } from 'nestjs-pino';
-import axios, { AxiosInstance } from 'axios';
 import { WalletProvider } from '../interfaces';
+import { ConfigService } from '@nestjs/config';
+import axios, { AxiosInstance } from 'axios';
+import { Injectable } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class BlockradarProvider implements WalletProvider {
@@ -23,8 +23,14 @@ export class BlockradarProvider implements WalletProvider {
     });
   }
 
-  createWalletAddress(userId: string): Promise<string> {
-    throw new Error('Method not implemented.');
+  async createWalletAddress(walletId: string): Promise<any> {
+    try {
+      const response = await this.client.post(`/wallets/${walletId}/addresses`);
+
+      return response.data;
+    } catch (error) {
+      throw new Error('Failed to create wallet address on blockradar');
+    }
   }
 
   getBalance(walletId: string): Promise<number> {
