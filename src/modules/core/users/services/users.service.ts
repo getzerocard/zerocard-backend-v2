@@ -22,7 +22,6 @@ export class UsersService {
   }
 
   async getUserProfile(user: UserEntity) {
-    console.log('fetching logged in user profile >>>', user);
     return user.getProfile();
   }
 

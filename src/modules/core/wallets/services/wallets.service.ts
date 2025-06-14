@@ -2,7 +2,7 @@ import { WalletsInfrastructureService } from '@/modules/infrastructure/wallet/se
 import { PrismaService } from '@/infrastructure';
 import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
-import { UserEntity } from '@/shared';
+import { UserEntity, WalletEntity } from '@/shared';
 
 @Injectable()
 export class WalletsService {
@@ -15,7 +15,7 @@ export class WalletsService {
   }
 
   async createWalletAddresses(user: UserEntity) {
-    if (user.walletsGenerated()) return;
+    if (user.walletsGenerated()) return this.getWallets(user.id);
 
     return await this.walletsInfrastructureService.createWalletAddresses(user.id);
   }
@@ -28,6 +28,6 @@ export class WalletsService {
       },
     });
 
-    return wallets;
+    return wallets.map(wallet => WalletEntity.fromRawData(wallet).getWalletDetails());
   }
 }

@@ -1,5 +1,6 @@
 import { BlockradarService } from './blockradar.service';
 import { PrismaService } from '@/infrastructure';
+import { WalletEntity } from '@/shared';
 import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 
@@ -44,18 +45,10 @@ export class WalletsInfrastructureService {
             },
           },
         },
-        select: {
-          wallets: {
-            select: {
-              chain: true,
-              address: true,
-              balance: true,
-            },
-          },
-        },
+        include: { wallets: true },
       });
 
-      return updatedUser.wallets;
+      return updatedUser.wallets.map(wallet => WalletEntity.fromRawData(wallet).getWalletDetails());
     });
 
     return wallets;
