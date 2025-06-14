@@ -1,0 +1,15 @@
+model Token {
+  id        String               @id @default(uuid())
+  symbol    String               @map("symbol")
+  name      String               @map("name")
+  decimals  Int                  @map("decimals")
+  chain     WalletChain          @unique @map("chain")
+  isActive  Boolean              @default(true) @map("is_active")
+  createdAt DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+  balances  WalletTokenBalance[]
+
+  @@unique([symbol, chain])
+  @@index([chain])
+  @@map("tokens")
+}

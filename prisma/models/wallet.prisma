@@ -1,17 +1,17 @@
 model Wallet {
-  id               String             @id @default(uuid())
-  identifier       String             @unique @map("identifier") // A human-readable identifier, e.g. “User123_USD_Wallet”
-  name             String             @map("name") // e.g. “User 123 USD Wallet”
-  ownerId          String             @map("owner_id")
-  owner            User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  chain            WalletChain        @map("chain")
-  providerWalletId String             @map("provider_wallet_id")
-  address          String             @unique @map("address")
-  balance          Decimal            @default(0.0) @map("balance")
-  isActive         Boolean            @default(true) @map("is_active")
-  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  id               String               @id @default(uuid())
+  identifier       String               @unique @map("identifier") // A human-readable identifier, e.g. “User123_USD_Wallet”
+  name             String               @map("name") // e.g. “User 123 USD Wallet”
+  ownerId          String               @map("owner_id")
+  owner            User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  chain            WalletChain          @map("chain")
+  providerWalletId String               @map("provider_wallet_id")
+  address          String               @unique @map("address")
+  isActive         Boolean              @default(true) @map("is_active")
+  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime             @updatedAt @map("updated_at") @db.Timestamptz
   entries          TransactionEntry[]
+  balances         WalletTokenBalance[]
 
   @@index([identifier])
   @@index([ownerId])
@@ -22,14 +22,28 @@ model Wallet {
 }
 
 enum WalletChain {
-  ethereum @map("ethereum")
-  bnb      @map("bnb")
-  polygon  @map("polygon")
-  tron     @map("tron")
-  base     @map("base")
-  arbitrum @map("arbitrum")
-  optimism @map("optimism")
-  solana   @map("solana")
-  celo     @map("celo")
-  lisk     @map("lisk")
+  ethereum
+  bnb
+  polygon
+  tron
+  base
+  arbitrum
+  optimism
+  solana
+  celo
+  lisk
+}
+
+model WalletTokenBalance {
+  id        String   @id @default(uuid())
+  walletId  String   @map("wallet_id")
+  wallet    Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  tokenId   String   @map("token_id")
+  token     Token    @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+  balance   Decimal  @map("balance")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([walletId, tokenId])
+  @@map("wallet_token_balances")
 }

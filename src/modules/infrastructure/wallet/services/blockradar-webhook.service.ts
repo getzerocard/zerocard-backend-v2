@@ -32,33 +32,39 @@ export class BlockradarWebhookService {
   private async handleDepositSuccess(data: Record<string, any>) {
     const recipientAddress = data.recipientAddress;
     const amount = data.amount;
-    const asset = data.asset.symbol;
+    const asset = data.asset.symbol.toLowerCase();
     const reference = data.reference;
     const senderAddress = data.senderAddress;
+    const chain = data.blockchain.name;
 
     await this.database.$transaction(async tx => {
+      // get the user wallet based on the recipient address
       const userWallet = await tx.wallet.findUnique({
         where: { address: recipientAddress },
       });
 
       if (!userWallet) {
         this.logger.fatal('No wallet found in the blockradar transaction payload', { data });
-        return;
+        throw new Error('No wallet found in the blockradar transaction payload');
       }
 
+      /*
+       * check if the transaction already exists,
+       * we want to avoid giving value to the same transaction multiple times
+       */
       const transaction = await tx.transaction.findUnique({
         where: { reference, status: 'COMPLETED' },
       });
-
       if (transaction) {
-        // add this step to avoid duplicate transactions
-        this.logger.fatal('Transaction already exists', { reference, transaction });
+        this.logger.warn('Transaction already exists', { reference, transaction });
         return;
       }
 
+      // create transaction record
       await tx.transaction.create({
         data: {
           reference,
+          user: { connect: { id: userWallet.ownerId } },
           category: 'DEPOSIT',
           status: 'COMPLETED',
           completedAt: new Date(),
@@ -74,10 +80,33 @@ export class BlockradarWebhookService {
         },
       });
 
-      await tx.wallet.update({
-        where: { id: userWallet.id },
-        data: {
-          balance: { increment: amount },
+      /**
+       * update the wallet token balance
+       */
+      const token = await tx.token.findUnique({
+        where: { symbol: asset, chain, isActive: true },
+      });
+      if (!token) {
+        this.logger.fatal('Token not found', { asset });
+        throw new Error('Token not found');
+      }
+
+      await tx.walletTokenBalance.upsert({
+        where: {
+          walletId_tokenId: {
+            walletId: userWallet.id,
+            tokenId: token.id,
+          },
+        },
+        create: {
+          walletId: userWallet.id,
+          tokenId: token.id,
+          balance: amount,
+        },
+        update: {
+          balance: {
+            increment: amount,
+          },
         },
       });
     });

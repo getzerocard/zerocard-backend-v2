@@ -1,17 +1,19 @@
 model Transaction {
-  id            String              @id @default(uuid())
-  reference     String              @unique @map("reference")
-  category      TransactionCategory @default(TRANSFER) @map("category")
-  status        TransactionStatus   @default(PENDING) @map("status")
-  description   String?             @map("description")
-  initiatedBy   User?               @relation(fields: [initiatedById], references: [id], onDelete: Cascade)
-  initiatedById String?             @map("initiated_by_id")
-  createdAt     DateTime            @default(now()) @map("created_at") @db.Timestamptz
-  completedAt   DateTime?           @map("completed_at") @db.Timestamptz
-  entries       TransactionEntry[]
+  id          String              @id @default(uuid())
+  reference   String              @unique @map("reference")
+  category    TransactionCategory @default(TRANSFER) @map("category")
+  status      TransactionStatus   @default(PENDING) @map("status")
+  description String?             @map("description")
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String              @map("user_id")
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  completedAt DateTime?           @map("completed_at") @db.Timestamptz
+  entries     TransactionEntry[]
 
   @@index([reference])
   @@index([status])
+  @@index([userId])
+  @@index([createdAt])
   @@map("transactions")
 }
 

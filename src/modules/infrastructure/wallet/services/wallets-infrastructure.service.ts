@@ -45,7 +45,7 @@ export class WalletsInfrastructureService {
             },
           },
         },
-        include: { wallets: true },
+        include: { wallets: { include: { balances: true } } },
       });
 
       return updatedUser.wallets.map(wallet => WalletEntity.fromRawData(wallet).getWalletDetails());

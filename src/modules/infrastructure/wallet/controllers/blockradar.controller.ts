@@ -1,4 +1,12 @@
-import { BadRequestException, Body, Controller, Headers, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { BlockradarWebhookService } from '../services';
 import { BlockradarWebhookEventDto } from '../dtos';
 import { plainToInstance } from 'class-transformer';
@@ -17,6 +25,7 @@ export class BlockradarController {
   }
 
   @Post('webhook')
+  @HttpCode(HttpStatus.OK)
   async webhook(@Body() body: any, @Headers('x-blockradar-signature') signature: string) {
     this.logger.info(`Received blockradar webhook: ${JSON.stringify(body)}`);
 

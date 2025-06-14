@@ -26,6 +26,9 @@ export class WalletsService {
         ownerId: userId,
         isActive: true,
       },
+      include: {
+        balances: true,
+      },
     });
 
     return wallets.map(wallet => WalletEntity.fromRawData(wallet).getWalletDetails());

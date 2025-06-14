@@ -1,22 +1,18 @@
-import { Wallet } from '@prisma/client';
+import { Wallet, WalletChain, WalletTokenBalance } from '@prisma/client';
 
 export class WalletEntity {
   constructor(
     public readonly id: string,
     public readonly address: string,
-    public readonly chain: string,
-    public readonly balance: number,
+    public readonly chain: WalletChain,
+    public readonly balances: WalletTokenBalance[],
   ) {}
 
-  static fromRawData(wallet: Wallet): WalletEntity {
-    return new WalletEntity(wallet.id, wallet.address, wallet.chain, wallet.balance.toNumber());
+  static fromRawData(wallet: Wallet & { balances: WalletTokenBalance[] }): WalletEntity {
+    return new WalletEntity(wallet.id, wallet.address, wallet.chain, wallet.balances);
   }
 
-  getBalance(): number {
-    return this.balance;
-  }
-
-  getChain(): string {
+  getChain(): WalletChain {
     return this.chain;
   }
 
@@ -28,7 +24,7 @@ export class WalletEntity {
     return {
       address: this.address,
       chain: this.chain,
-      balance: this.balance,
+      balances: this.balances,
     };
   }
 }
