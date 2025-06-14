@@ -37,6 +37,20 @@ class ErrorResponseDto {
   };
 }
 
+class TokenBalanceDto {
+  @ApiProperty({
+    example: 'usdc',
+    description: 'Token symbol',
+  })
+  token: string;
+
+  @ApiProperty({
+    example: 10.5,
+    description: 'Token balance',
+  })
+  balance: number;
+}
+
 class WalletAddressDto {
   @ApiProperty({
     example: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
@@ -45,32 +59,21 @@ class WalletAddressDto {
   address: string;
 
   @ApiProperty({
-    example: 'ETH',
+    example: 'ethereum',
     description: 'Blockchain network/chain',
   })
   chain: string;
 
   @ApiProperty({
-    example: '1.23456789',
-    description: 'Current wallet balance',
+    type: [TokenBalanceDto],
+    description: 'Array of token balances in the wallet',
   })
-  balance: string;
+  balances: TokenBalanceDto[];
 }
 
 class WalletsResponseDto extends SuccessResponseDto {
   @ApiProperty({
-    example: [
-      {
-        address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-        chain: 'ETH',
-        balance: '1.23456789',
-      },
-      {
-        address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-        chain: 'USDT',
-        balance: '1000.00000000',
-      },
-    ],
+    type: [WalletAddressDto],
     description: 'Array of wallet addresses with their balances',
   })
   wallets: WalletAddressDto[];
@@ -97,13 +100,18 @@ export const WalletsSwagger = {
           wallets: [
             {
               address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-              chain: 'ETH',
-              balance: '0.00000000',
+              chain: 'ethereum',
+              balances: [
+                {
+                  token: 'usdc',
+                  balance: 10.5,
+                },
+              ],
             },
             {
-              address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-              chain: 'USDT',
-              balance: '0.00000000',
+              address: '57NYmAhwDv7zHeM1Y6fZMk5t979g7NLBdY3kmehtMMgg',
+              chain: 'solana',
+              balances: [],
             },
           ],
         },
@@ -140,13 +148,18 @@ export const WalletsSwagger = {
           wallets: [
             {
               address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-              chain: 'ETH',
-              balance: '1.23456789',
+              chain: 'ethereum',
+              balances: [
+                {
+                  token: 'usdc',
+                  balance: 10.5,
+                },
+              ],
             },
             {
-              address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-              chain: 'USDT',
-              balance: '1000.00000000',
+              address: '57NYmAhwDv7zHeM1Y6fZMk5t979g7NLBdY3kmehtMMgg',
+              chain: 'solana',
+              balances: [],
             },
           ],
         },
