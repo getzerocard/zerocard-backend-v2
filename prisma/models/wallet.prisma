@@ -40,7 +40,7 @@ model WalletTokenBalance {
   wallet    Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
   tokenId   String   @map("token_id")
   token     Token    @relation(fields: [tokenId], references: [id], onDelete: Cascade)
-  balance   Decimal  @map("balance")
+  balance   Decimal  @default(0) @map("balance")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 

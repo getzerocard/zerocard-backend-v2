@@ -69,11 +69,9 @@ export class HttpExceptionsFilter implements ExceptionFilter {
         typeof rawRes === 'object' &&
         Array.isArray((rawRes as StructuredExceptionResponse).message)
       ) {
-        const messages = (rawRes as StructuredExceptionResponse)
-          .message as string[];
+        const messages = (rawRes as StructuredExceptionResponse).message as string[];
         // Pick the first validation error:
-        const firstMessage =
-          messages.length > 0 ? messages[0] : 'Validation failed';
+        const firstMessage = messages.length > 0 ? messages[0] : 'Validation failed';
 
         return {
           status,
@@ -109,10 +107,7 @@ export class HttpExceptionsFilter implements ExceptionFilter {
       }
 
       // If the payload included an "errorType" field, use it; otherwise, use exception.name
-      code =
-        typeof structured.errorType === 'string'
-          ? structured.errorType
-          : exception.name;
+      code = typeof structured.errorType === 'string' ? structured.errorType : exception.name;
 
       return {
         status,

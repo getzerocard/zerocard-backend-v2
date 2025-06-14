@@ -27,7 +27,11 @@ export class WalletsService {
         isActive: true,
       },
       include: {
-        balances: true,
+        balances: {
+          include: {
+            token: true,
+          },
+        },
       },
     });
 

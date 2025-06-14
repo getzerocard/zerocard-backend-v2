@@ -28,27 +28,48 @@ export class WalletsInfrastructureService {
 
     this.logger.info(`Created ${addresses.length} wallet addresses for user ${user.id}`);
 
+    const tokens = await this.database.token.findMany({
+      where: {
+        chain: {
+          in: addresses.map(address => address.chain),
+        },
+      },
+    });
+
     const wallets = await this.database.$transaction(async tx => {
-      const updatedUser = await this.database.user.update({
+      await tx.user.update({
         where: { id: user.id },
         data: {
           walletsGeneratedAt: new Date(),
-          wallets: {
-            createMany: {
-              data: addresses.map(address => ({
-                identifier: `${user.uniqueName}_${address.chain}_wallet`,
-                name: `${user.uniqueName} ${address.chain} Wallet`,
-                address: address.address,
-                providerWalletId: address.id,
-                chain: address.chain,
-              })),
-            },
-          },
         },
-        include: { wallets: { include: { balances: true } } },
       });
 
-      return updatedUser.wallets.map(wallet => WalletEntity.fromRawData(wallet).getWalletDetails());
+      const wallets = [];
+
+      for (const address of addresses) {
+        const wallet = await tx.wallet.create({
+          data: {
+            owner: { connect: { id: user.id } },
+            identifier: `${address.chain}_wallet`,
+            name: `${address.chain} Wallet`,
+            address: address.address,
+            providerWalletId: address.id,
+            chain: address.chain,
+            balances: {
+              createMany: {
+                data: tokens.map(token => ({
+                  tokenId: token.id,
+                })),
+              },
+            },
+          },
+          include: { balances: { include: { token: true } } },
+        });
+
+        wallets.push(wallet);
+      }
+
+      return wallets.map(wallet => WalletEntity.fromRawData(wallet).getWalletDetails());
     });
 
     return wallets;
