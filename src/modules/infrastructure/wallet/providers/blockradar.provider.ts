@@ -24,6 +24,9 @@ export class BlockradarProvider implements WalletProvider {
         `/wallets/${params.walletId}/addresses`,
         {
           name: params.ownerId,
+          disableAutoSweep: false,
+          showPrivateKey: false,
+          enableGaslessWithdraw: true,
         },
         {
           headers: {
