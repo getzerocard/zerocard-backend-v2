@@ -11,6 +11,12 @@ export class SystemWalletService {
     });
   }
 
+  async getWalletByProviderWalletId(walletId: string) {
+    return this.database.systemWallet.findUnique({
+      where: { walletId },
+    });
+  }
+
   async getWalletById(id: string) {
     return this.database.systemWallet.findUnique({
       where: { id },

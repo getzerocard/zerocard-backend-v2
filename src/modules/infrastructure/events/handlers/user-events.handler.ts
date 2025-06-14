@@ -23,8 +23,6 @@ export class UserEventsHandler {
     // try {
     const addresses = await this.blockradarService.createWalletAddresses(event.aggregateId);
 
-    console.log('addresses >>><<<', addresses);
-
     this.logger.info(`Created ${addresses.length} wallet addresses for user ${event.aggregateId}`);
 
     await this.database.$transaction(async tx => {

@@ -1,8 +1,8 @@
-import { Body, Controller, Headers, Post, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Headers, Post } from '@nestjs/common';
+import { BlockradarWebhookService } from '../services';
 import { BlockradarWebhookEventDto } from '../dtos';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
-import { BlockradarWebhookService } from '../services';
 import { PinoLogger } from 'nestjs-pino';
 
 @Controller('blockradar')
@@ -21,8 +21,8 @@ export class BlockradarController {
     const isValid = await this.webhookService.validateSignature(body, signature);
 
     if (!isValid) {
-      this.logger.warn('Invalid signature on blockradar webhook', { body, signature });
-      throw new UnauthorizedException('Invalid signature');
+      this.logger.fatal('Invalid signature on blockradar webhook', { body, signature });
+      throw new BadRequestException('Invalid signature');
     }
 
     const dto = plainToInstance(BlockradarWebhookEventDto, body);

@@ -8,6 +8,7 @@ model Wallet {
   providerWalletId String             @map("provider_wallet_id")
   address          String             @unique @map("address")
   balance          Decimal            @default(0.0) @map("balance")
+  isActive         Boolean            @default(true) @map("is_active")
   createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz
   updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamptz
   entries          TransactionEntry[]

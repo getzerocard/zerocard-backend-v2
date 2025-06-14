@@ -36,6 +36,7 @@ model TransactionEntry {
   wallet        Wallet      @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId      String      @map("wallet_id")
   entryType     EntryType   @map("entry_type")
+  asset         String      @map("asset")
   amount        Decimal     @map("amount")
   memo          String?     @map("memo")
   createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
