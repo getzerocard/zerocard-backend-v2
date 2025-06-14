@@ -1,5 +1,5 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { PrismaService } from '@/infrastructure';
+import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { PrismaError, PrismaService } from '@/infrastructure';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -14,11 +14,20 @@ export class UsersRepository {
         },
       });
     } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === PrismaError.UniqueConstraintViolation) {
+          throw new ConflictException('A user with this email already exists already');
+        }
+      }
       throw new InternalServerErrorException('Failed to create user');
     }
   }
 
   async findUser(where: Prisma.UserWhereUniqueInput) {
     return await this.database.user.findUnique({ where });
+  }
+
+  async updateUser(where: Prisma.UserWhereUniqueInput, data: Prisma.UserUpdateInput) {
+    return await this.database.user.update({ where, data });
   }
 }

@@ -35,11 +35,7 @@ export class AuthService extends BaseAuthService {
 
     await this.sendSiginInOtp(authUser, deviceInfo);
 
-    return {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-    };
+    return;
   }
 
   async completeSignIn(dto: CompleteSignInDto, deviceInfo: DeviceInfo) {

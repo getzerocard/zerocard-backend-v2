@@ -69,7 +69,7 @@ export class UserEntity {
       avatar: this.avatar,
       uniqueName: this.uniqueName,
       walletsGenerated: !!this.walletsGeneratedAt,
-      kycStatus: this.kycStatus,
+      completedKyc: this.kycStatus === 'COMPLETED',
     };
   }
 }
