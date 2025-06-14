@@ -57,6 +57,10 @@ export class UserEntity {
     return this.updatedAt;
   }
 
+  walletsGenerated(): boolean {
+    return !!this.walletsGeneratedAt;
+  }
+
   getProfile() {
     return {
       email: this.email,

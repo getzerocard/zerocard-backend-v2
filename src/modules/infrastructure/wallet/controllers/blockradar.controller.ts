@@ -4,8 +4,10 @@ import { BlockradarWebhookEventDto } from '../dtos';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
 import { PinoLogger } from 'nestjs-pino';
+import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller('blockradar')
+@ApiExcludeController()
 export class BlockradarController {
   constructor(
     private readonly webhookService: BlockradarWebhookService,
