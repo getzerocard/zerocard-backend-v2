@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { WalletsService } from '../services';
+import { WalletsSwagger } from '../swagger';
 import { PinoLogger } from 'nestjs-pino';
 import { JwtAuthGuard } from '@/common';
 import { UserEntity } from '@/shared';
@@ -16,6 +17,7 @@ export class WalletsController {
   }
 
   @Post('addresses')
+  @WalletsSwagger.createWalletAddresses
   async createWalletAddresses(@Req() req: Request) {
     const user = req.user as UserEntity;
     const wallets = await this.walletsService.createWalletAddresses(user);
@@ -23,6 +25,7 @@ export class WalletsController {
   }
 
   @Get()
+  @WalletsSwagger.getWallets
   async getWallets(@Req() req: Request) {
     const user = req.user as UserEntity;
     const wallets = await this.walletsService.getWallets(user.id);

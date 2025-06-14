@@ -17,7 +17,7 @@ export class WalletsService {
   async createWalletAddresses(user: UserEntity) {
     if (user.walletsGenerated()) return;
 
-    await this.walletsInfrastructureService.createWalletAddresses(user.id);
+    return await this.walletsInfrastructureService.createWalletAddresses(user.id);
   }
 
   async getWallets(userId: string) {

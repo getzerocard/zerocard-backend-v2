@@ -27,8 +27,8 @@ export class WalletsInfrastructureService {
 
     this.logger.info(`Created ${addresses.length} wallet addresses for user ${user.id}`);
 
-    await this.database.$transaction(async tx => {
-      await this.database.user.update({
+    const wallets = await this.database.$transaction(async tx => {
+      const updatedUser = await this.database.user.update({
         where: { id: user.id },
         data: {
           walletsGeneratedAt: new Date(),
@@ -44,7 +44,20 @@ export class WalletsInfrastructureService {
             },
           },
         },
+        select: {
+          wallets: {
+            select: {
+              chain: true,
+              address: true,
+              balance: true,
+            },
+          },
+        },
       });
+
+      return updatedUser.wallets;
     });
+
+    return wallets;
   }
 }
