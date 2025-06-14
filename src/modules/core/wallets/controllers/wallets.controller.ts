@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { WalletsService } from '../services';
 import { WalletsSwagger } from '../swagger';
 import { PinoLogger } from 'nestjs-pino';
@@ -6,8 +7,10 @@ import { JwtAuthGuard } from '@/common';
 import { UserEntity } from '@/shared';
 import { Request } from 'express';
 
+@ApiTags('Wallets')
 @Controller('wallets')
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class WalletsController {
   constructor(
     private readonly walletsService: WalletsService,

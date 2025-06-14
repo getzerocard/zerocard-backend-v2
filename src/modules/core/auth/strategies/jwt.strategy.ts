@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { AccessTokenPayload } from '../types';
+import { AuthUserEntity } from '../entities';
 import { SessionService } from '../services';
 import { PinoLogger } from 'nestjs-pino';
 
@@ -18,16 +19,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_ACCESS_SECRET'),
+      secretOrKey: configService.get<string>('jwt.accessSecret'),
     });
     this.logger.setContext(JwtStrategy.name);
   }
 
   async validate(payload: AccessTokenPayload) {
-    console.log('payload >>>', payload);
     const isSessionBlacklisted = await this.sessionService.isSessionBlacklisted(payload.sid);
-
-    console.log('isSessionBlacklisted >>>', isSessionBlacklisted);
 
     if (isSessionBlacklisted) {
       this.logger.error(`Session ${payload.sid} is blacklisted`);
@@ -40,7 +38,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       this.logger.error(`User ${payload.sub} not found`);
       throw new UnauthorizedException('An error occurred, please login again');
     }
-
-    return user;
+    const authUser = AuthUserEntity.fromRawData(user);
+    return authUser;
   }
 }
