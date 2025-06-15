@@ -27,7 +27,11 @@ export class UsersRepository {
     return await this.database.user.findUnique({ where });
   }
 
-  async updateUser(where: Prisma.UserWhereUniqueInput, data: Prisma.UserUpdateInput) {
-    return await this.database.user.update({ where, data });
+  async updateUser(
+    where: Prisma.UserWhereUniqueInput,
+    data: Prisma.UserUpdateInput,
+    include?: Prisma.UserInclude,
+  ) {
+    return await this.database.user.update({ where, data, include });
   }
 }

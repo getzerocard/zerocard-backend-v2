@@ -4,9 +4,9 @@ dotenv.config();
 
 export const config = {
   app: {
-    env: process.env.NODE_ENV,
+    env: process.env.APP_ENV,
     name: process.env.APP_NAME,
-    port: process.env.PORT,
+    port: process.env.APP_PORT,
   },
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET,
@@ -30,5 +30,6 @@ export const config = {
   },
   sudo: {
     url: process.env.SUDO_URL,
+    apiKey: process.env.SUDO_API_KEY,
   },
 } as const;

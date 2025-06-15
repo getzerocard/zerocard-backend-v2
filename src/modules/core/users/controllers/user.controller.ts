@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Patch, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { UpdateUniqueNameDto } from '../dtos';
+import { UpdateAddressDto, UpdateUniqueNameDto } from '../dtos';
 import { UsersService } from '../services';
 import { UserSwagger } from '../swagger';
 import { JwtAuthGuard } from '@/common';
@@ -32,5 +32,12 @@ export class UserController {
   async updateUniqueName(@Req() req: Request, @Body() dto: UpdateUniqueNameDto) {
     const user = req.user as UserEntity;
     return await this.usersService.updateUniqueName(dto, user.id);
+  }
+
+  @Put('address')
+  @UserSwagger.updateAddress
+  async updateAddress(@Req() req: Request, @Body() dto: UpdateAddressDto) {
+    const user = req.user as UserEntity;
+    return await this.usersService.updateAddress(dto, user.id);
   }
 }

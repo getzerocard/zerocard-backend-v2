@@ -1,0 +1,18 @@
+model CardOrder {
+  id          String          @id @default(uuid())
+  userId      String          @map("user_id")
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      CardOrderStatus @default(PROCESSING) @map("status")
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  fulfilledAt DateTime?       @map("fulfilled_at") @db.Timestamptz
+
+  @@index([userId])
+  @@map("card_orders")
+}
+
+enum CardOrderStatus {
+  PROCESSING @map("processing")
+  COMPLETED  @map("completed")
+  FAILED     @map("failed")
+}
