@@ -22,11 +22,7 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   const logger = await app.resolve(PinoLogger);
 
-  let origin: string[] | boolean = true;
-
-  if (config.get('NODE_ENV') === 'production') {
-    origin = [config.get<string>('CLIENT_URL')];
-  }
+  const origin: string[] | boolean = true;
 
   app.setGlobalPrefix('api/v1');
 
@@ -92,7 +88,7 @@ async function bootstrap() {
     });
   }
 
-  const port = config.get<number>('APP_PORT', 3000);
+  const port = config.get<number>('app.port', 3000);
 
   await app.listen(port, () => {
     logger.info(`🚀 zerocard backend api is running on PORT ${port}`);
