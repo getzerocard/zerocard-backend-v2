@@ -1,7 +1,7 @@
 import { BlockradarService } from './blockradar.service';
 import { PrismaService } from '@/infrastructure';
-import { WalletEntity } from '@/shared';
 import { Injectable } from '@nestjs/common';
+import { WalletEntity } from '@/shared';
 import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()

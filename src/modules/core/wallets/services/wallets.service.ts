@@ -1,15 +1,15 @@
 import { WalletsInfrastructureService } from '@/modules/infrastructure/wallet/services';
+import { UserEntity, WalletEntity } from '@/shared';
 import { PrismaService } from '@/infrastructure';
 import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
-import { UserEntity, WalletEntity } from '@/shared';
 
 @Injectable()
 export class WalletsService {
   constructor(
     private readonly logger: PinoLogger,
     private readonly database: PrismaService,
-    private readonly walletsInfrastructureService: WalletsInfrastructureService,
+    private readonly walletsInfraService: WalletsInfrastructureService,
   ) {
     this.logger.setContext(WalletsService.name);
   }
@@ -17,7 +17,7 @@ export class WalletsService {
   async createWalletAddresses(user: UserEntity) {
     if (user.walletsGenerated()) return this.getWallets(user.id);
 
-    return await this.walletsInfrastructureService.createWalletAddresses(user.id);
+    return await this.walletsInfraService.createWalletAddresses(user.id);
   }
 
   async getWallets(userId: string) {

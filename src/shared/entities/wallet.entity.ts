@@ -27,12 +27,18 @@ export class WalletEntity {
   }
 
   getWalletDetails() {
+    const tokenSums: Record<string, number> = {};
+    for (const balance of this.balances) {
+      const symbol = balance.token.symbol;
+      const amount = Number(balance.balance);
+      tokenSums[symbol] = (tokenSums[symbol] || 0) + amount;
+    }
     return {
       address: this.address,
       chain: this.chain,
-      balances: this.balances.map(balance => ({
-        token: balance.token.symbol,
-        balance: Number(balance.balance),
+      balances: Object.entries(tokenSums).map(([token, balance]) => ({
+        token,
+        balance,
       })),
     };
   }

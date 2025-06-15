@@ -13,25 +13,25 @@ const getSeedTokens = (): SeedTokenInput[] => {
       name: 'Tether USD (Ethereum)',
       symbol: 'usdt',
       decimals: 6,
-      chain: WalletChain.ethereum,
+      chain: 'ethereum',
     },
     {
       name: 'USD Coin (Ethereum)',
       symbol: 'usdc',
       decimals: 6,
-      chain: WalletChain.ethereum,
+      chain: 'ethereum',
     },
     {
       name: 'USD Coin (Solana)',
       symbol: 'usdc',
       decimals: 6,
-      chain: WalletChain.solana,
+      chain: 'solana',
     },
     {
       name: 'Tether USD (Solana)',
       symbol: 'usdt',
       decimals: 6,
-      chain: WalletChain.solana,
+      chain: 'solana',
     },
   ];
 };
@@ -44,17 +44,20 @@ export const seedTokens = async (prisma: PrismaClient) => {
 
     await prisma.$transaction(
       async tx => {
-        for (const token of tokens) {
+        for (const tk of tokens) {
           await tx.token.upsert({
             where: {
-              chain: token.chain,
+              symbol_chain: {
+                chain: tk.chain,
+                symbol: tk.symbol,
+              },
             },
+            create: tk,
             update: {
-              name: token.name,
-              symbol: token.symbol,
-              decimals: token.decimals,
+              name: tk.name,
+              symbol: tk.symbol,
+              decimals: tk.decimals,
             },
-            create: token,
           });
         }
       },

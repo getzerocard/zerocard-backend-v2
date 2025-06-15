@@ -3,7 +3,7 @@ model Token {
   symbol    String               @map("symbol")
   name      String               @map("name")
   decimals  Int                  @map("decimals")
-  chain     WalletChain          @unique @map("chain")
+  chain     WalletChain          @map("chain")
   isActive  Boolean              @default(true) @map("is_active")
   createdAt DateTime             @default(now()) @map("created_at") @db.Timestamptz
   updatedAt DateTime             @updatedAt @map("updated_at") @db.Timestamptz

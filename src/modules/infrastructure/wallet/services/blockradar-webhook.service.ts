@@ -43,9 +43,11 @@ export class BlockradarWebhookService {
         where: { address: recipientAddress },
       });
 
+      console.log('User Wallet >>>', userWallet);
+
       if (!userWallet) {
-        this.logger.fatal('No wallet found in the blockradar transaction payload', { data });
-        throw new Error('No wallet found in the blockradar transaction payload');
+        this.logger.fatal('No user wallet found for the blockradar deposit', { data });
+        throw new Error('No user wallet found for the blockradar deposit');
       }
 
       /*
@@ -84,7 +86,7 @@ export class BlockradarWebhookService {
        * update the wallet token balance
        */
       const token = await tx.token.findUnique({
-        where: { symbol: asset, chain, isActive: true },
+        where: { symbol_chain: { symbol: asset, chain }, isActive: true },
       });
       if (!token) {
         this.logger.fatal('Token not found', { asset });
