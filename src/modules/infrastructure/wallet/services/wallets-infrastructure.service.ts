@@ -46,13 +46,14 @@ export class WalletsInfrastructureService {
 
       const wallets = [];
 
+      const username = this.getUsernameFromEmail(user.email);
       for (const address of addresses) {
         const chainTokens = tokens.filter(token => token.chain === address.chain);
         const wallet = await tx.wallet.create({
           data: {
             owner: { connect: { id: user.id } },
-            identifier: `${address.chain}_wallet`,
-            name: `${address.chain} Wallet`,
+            identifier: `${username}_${address.chain}_wallet`,
+            name: `${username}'s ${address.chain} Wallet`,
             address: address.address,
             providerWalletId: address.id,
             chain: address.chain,
@@ -74,5 +75,14 @@ export class WalletsInfrastructureService {
     });
 
     return wallets;
+  }
+
+  private getUsernameFromEmail(email: string): string | null {
+    if (!email || typeof email !== 'string') return null;
+
+    const atIndex = email.indexOf('@');
+    if (atIndex === -1) return null;
+
+    return email.slice(0, atIndex);
   }
 }

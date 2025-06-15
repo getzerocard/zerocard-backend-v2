@@ -36,7 +36,9 @@ export class UsersService {
   async findUniqueName(uniqueName: string) {
     const foundUniqueName = await this.usersRepository.findUser({ uniqueName });
 
-    return !!foundUniqueName;
+    return {
+      available: !foundUniqueName,
+    };
   }
 
   async updateUniqueName(dto: UpdateUniqueNameDto, userId: string) {
