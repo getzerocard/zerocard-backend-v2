@@ -8,6 +8,12 @@ export const config = {
     name: process.env.APP_NAME,
     port: process.env.PORT,
   },
+  jwt: {
+    accessSecret: process.env.JWT_ACCESS_SECRET,
+    accessExpiry: process.env.JWT_ACCESS_EXPIRY,
+    refreshSecret: process.env.JWT_REFRESH_SECRET,
+    refreshExpiry: process.env.JWT_REFRESH_EXPIRY,
+  },
   database: {
     url: process.env.DATABASE_URL,
   },
@@ -16,6 +22,11 @@ export const config = {
   },
   smileid: {
     url: process.env.SMILEID_URL,
+    apiKey: process.env.SMILEID_API_KEY,
+    partnerId: process.env.SMILEID_PARTNER_ID,
+  },
+  blockradar: {
+    apiKey: process.env.BLOCKRADAR_API_KEY,
   },
   sudo: {
     url: process.env.SUDO_URL,

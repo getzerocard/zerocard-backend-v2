@@ -38,16 +38,6 @@ export const SHARED_HEADERS = [
     },
   }),
   ApiHeader({
-    name: 'x-client-platform',
-    description: 'Platform type',
-    required: true,
-    schema: {
-      type: 'string',
-      enum: ['mobile', 'web'],
-      example: 'mobile',
-    },
-  }),
-  ApiHeader({
     name: 'x-session-id',
     description: 'Current session identifier (optional)',
     required: false,

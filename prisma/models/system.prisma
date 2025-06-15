@@ -1,0 +1,14 @@
+model SystemWallet {
+  id        String      @id @default(uuid())
+  walletId  String      @unique @map("wallet_id")
+  apiKey    String      @unique @map("api_key")
+  address   String      @unique @map("address")
+  chain     WalletChain @map("chain")
+  isActive  Boolean     @default(true) @map("is_active")
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([walletId, chain])
+  @@index([walletId, isActive, chain])
+  @@map("system_wallets")
+}

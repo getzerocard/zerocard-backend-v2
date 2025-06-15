@@ -1,4 +1,4 @@
-import { CompleteSignInDto, OAuthSigninDto, ResendOtpDto, SignInDto } from '../dtos';
+import { CompleteSignInDto, OAuthSigninDto, SignInDto } from '../dtos';
 import { AuthService, CookieService } from '../services';
 import { AuthUserEntity } from '../entities';
 import { OauthProvider } from '../types';
@@ -51,13 +51,6 @@ export class AuthController {
   ) {
     const deviceInfo = req['deviceInfo'] as DeviceInfo;
     return await this.authService.oauthSignin(provider, dto, deviceInfo);
-  }
-
-  @Get('resend-otp')
-  @HttpCode(HttpStatus.OK)
-  @AuthSwagger.resendOtp
-  resendOtp(@Body() dto: ResendOtpDto) {
-    return this.authService.resendOtp(dto.email);
   }
 
   @Get('refresh-token')

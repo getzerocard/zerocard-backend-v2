@@ -1,2 +1,2 @@
 export * from './wallet-infrastructure.module';
-export * from './providers';
+export * from './services';

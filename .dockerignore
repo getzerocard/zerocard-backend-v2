@@ -1,0 +1,156 @@
+# compiled output
+/dist
+/node_modules
+
+.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Prisma
+prisma/generated
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Local terraform lock files
+.terraform.lock.hcl
+
+# Sensitive variable files
+*.tfvars
+*.tfvars.json
+
+# CLI configuration files
+.terraformrc
+terraform.rc
+
+# Infisical
+.infisical.json
+
+# PDF files
+*.pdf
+
+dummies/
+
+# Node modules
+node_modules/
+
+# Dependency directories
+dist/
+build/
+
+# Environment variables
+.env.local
+.env.*.local
+
+# TypeScript build files
+*.tsbuildinfo
+
+# Temporary files
+*.tmp
+*.temp
+
+# ESLint cache
+.eslintcache
+
+# Leftover from npm scripts
+*.tgz
+
+# Docker
+docker-compose.*
+.dockerignore
+
+# IDE and Editor directories
+.vscode/
+.idea/
+*.sublime-project
+
+# pnpm state files
+.pnpm-state.json
+
+# Git hooks
+lefthook.yml
+
+# Prisma generated files (if any are generated locally)
+prisma/migrations/
+prisma/*.db
+
+# Compiled nest files
+*.js.map
+
+# SQL test data files
+*.sql
+
+# Git
+.git
+.gitignore
+.github/
+
+# Local .terraform directories
+terraform/
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Local terraform lock files
+.terraform.lock.hcl
+
+# Sensitive variable files
+*.tfvars
+*.tfvars.json
+
+# CLI configuration files
+.terraformrc
+terraform.rc
+
+# Infisical
+.infisical.json
+
+.husky/
+.trunk/
+
+# Exclude README.md
+README.md

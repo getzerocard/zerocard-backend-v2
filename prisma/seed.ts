@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { Redis } from 'ioredis';
+import { seedTokens } from './seeders';
 
 const prisma = new PrismaClient();
 
@@ -15,6 +16,8 @@ async function flushCache() {
 
 const main = async () => {
   console.info('ℹ️ Starting database seeding...');
+
+  await seedTokens(prisma);
 
   console.info('ℹ️ Database seeding completed successfully');
   await flushCache();

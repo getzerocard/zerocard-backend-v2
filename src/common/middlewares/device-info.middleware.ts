@@ -8,7 +8,11 @@ export class DeviceInfoMiddleware implements NestMiddleware {
 
   use(req: Request, res: Response, next: NextFunction) {
     const userAgent = req.headers['user-agent'] || 'unknown';
-    const ip = req.ip === '::1' ? '127.0.0.1' : req.ip;
+
+    const forwardedFor = req.headers['x-forwarded-for'] as string | undefined;
+    const realIp = forwardedFor?.split(',')[0]?.trim() || req.socket?.remoteAddress || req.ip;
+    const ipAddress = realIp === '::1' ? '127.0.0.1' : realIp;
+
     const deviceId = (req.headers['x-device-id'] as string) || null;
     const deviceName = (req.headers['x-device-name'] as string) || null;
     const timezone = (req.headers['x-timezone'] as string) || null;
@@ -18,7 +22,7 @@ export class DeviceInfoMiddleware implements NestMiddleware {
     const sessionId = (req.headers['x-session-id'] as string) || null;
     const deviceHeaders: DeviceHeaders = {
       userAgent,
-      ipAddress: ip,
+      ipAddress,
       sessionId,
       deviceId,
       deviceName,

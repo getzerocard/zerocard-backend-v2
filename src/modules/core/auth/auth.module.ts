@@ -3,6 +3,7 @@ import { OauthProviderService } from './services';
 import { AuthController } from './controllers';
 import { MfaModule } from '@/modules/core/mfa';
 import { ConfigService } from '@nestjs/config';
+import { JwtStrategy } from './strategies';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import {
@@ -28,14 +29,14 @@ import {
   ],
   controllers: [AuthController],
   providers: [
-    AuthService,
-    SessionService,
-    TokenService,
-    CookieService,
     OauthProviderService,
     GoogleOAuthStrategy,
     AppleOAuthStrategy,
+    SessionService,
+    CookieService,
+    TokenService,
+    JwtStrategy,
+    AuthService,
   ],
-  exports: [],
 })
 export class AuthModule {}

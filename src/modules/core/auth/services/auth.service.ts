@@ -4,12 +4,12 @@ import { UsersService } from '@/modules/core/users/services';
 import { CompleteSignInDto, OAuthSigninDto } from '../dtos';
 import { BaseAuthService } from './base-auth.service';
 import { SessionService } from './session.service';
+import { CacheService } from '@/infrastructure';
 import { TokenService } from './token.service';
 import { OauthProviderService } from './oauth';
 import { AuthUserEntity } from '../entities';
-import { OauthProvider } from '../types';
 import { DeviceInfo, Util } from '@/shared';
-import { CacheService } from '@/infrastructure';
+import { OauthProvider } from '../types';
 
 @Injectable()
 export class AuthService extends BaseAuthService {
@@ -35,11 +35,7 @@ export class AuthService extends BaseAuthService {
 
     await this.sendSiginInOtp(authUser, deviceInfo);
 
-    return {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-    };
+    return;
   }
 
   async completeSignIn(dto: CompleteSignInDto, deviceInfo: DeviceInfo) {
@@ -49,8 +45,6 @@ export class AuthService extends BaseAuthService {
     if (!user) {
       throw new BadRequestException('Invalid credentials');
     }
-
-    // await this.mfaService.verifyToken(email, 'login', code);
 
     return this.completeAuth(AuthUserEntity.fromRawData(user), deviceInfo);
   }
@@ -75,15 +69,6 @@ export class AuthService extends BaseAuthService {
     return this.completeAuth(authUser, deviceInfo);
   }
 
-  async resendOtp(email: string) {
-    const user = await this.usersService.findByEmail(email);
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-    const authUser = AuthUserEntity.fromRawData(user);
-    // await this.mfaService.sendMfaToken(authUser, 'login');
-  }
-
   async refreshToken(refreshToken: string, deviceInfo: DeviceInfo) {
     if (!refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
@@ -98,7 +83,6 @@ export class AuthService extends BaseAuthService {
     }
 
     const session = validSession.session;
-
     const isValidRefreshToken = await Util.validateHash(refreshToken, session.refreshToken);
 
     if (!isValidRefreshToken) {

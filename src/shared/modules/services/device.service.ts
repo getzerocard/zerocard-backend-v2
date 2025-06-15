@@ -1,9 +1,9 @@
+import { DeviceHeaders, DeviceInfo, ParsedDeviceInfo } from '../../types';
 import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { UAParser } from 'ua-parser-js';
-import * as geoip from 'geoip-lite';
 import * as crypto from 'node:crypto';
-import { DeviceHeaders, DeviceInfo, ParsedDeviceInfo } from '../../types';
+import * as geoip from 'geoip-lite';
 
 @Injectable()
 export class DeviceService {

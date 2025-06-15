@@ -42,8 +42,8 @@ export class TokenService {
     };
 
     return this.jwtService.signAsync(payload, {
-      secret: this.configService.get('JWT_ACCESS_SECRET'),
-      expiresIn: this.configService.get('JWT_ACCESS_EXPIRY'),
+      secret: this.configService.get('jwt.accessSecret'),
+      expiresIn: this.configService.get('jwt.accessExpiry'),
     });
   }
 
@@ -63,15 +63,15 @@ export class TokenService {
     };
 
     return this.jwtService.signAsync(payload, {
-      secret: this.configService.get('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.get('JWT_REFRESH_EXPIRY'),
+      secret: this.configService.get('jwt.refreshSecret'),
+      expiresIn: this.configService.get('jwt.refreshExpiry'),
     });
   }
 
   async validateRefreshToken(refreshToken: string): Promise<TokenValidationResult | null> {
     try {
       const decoded = await this.jwtService.verifyAsync(refreshToken, {
-        secret: this.configService.get('JWT_REFRESH_SECRET'),
+        secret: this.configService.get('jwt.refreshSecret'),
       });
 
       if (!this.isValidRefreshTokenPayload(decoded)) {

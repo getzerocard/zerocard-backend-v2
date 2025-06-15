@@ -110,16 +110,9 @@ export class OauthProviderService {
         firstName: oauthUser.firstName,
         lastName: oauthUser.lastName,
         avatar: oauthUser.picture,
-        userAuth: {
-          create: {
-            emailVerifiedAt: new Date(),
-            oauthConnections: {
-              create: {
-                provider,
-                providerUserId: oauthUser.providerUserId,
-              },
-            },
-          },
+        emailVerifiedAt: new Date(),
+        oauthConnections: {
+          create: [{ provider, providerUserId: oauthUser.providerUserId }],
         },
       },
     });

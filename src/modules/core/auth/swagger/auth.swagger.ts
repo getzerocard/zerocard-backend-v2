@@ -106,7 +106,6 @@ export const AuthSwagger = {
 
       This is the first step in the passwordless authentication flow.`,
     }),
-    ...SHARED_HEADERS,
     ApiBody({
       type: SignInDto,
       description: 'Email address for signin',
@@ -401,112 +400,6 @@ export const AuthSwagger = {
     }),
   ),
 
-  resendOtp: ApiDocs(
-    ApiOperation({
-      summary: 'Resend OTP code',
-      description: `Resend the OTP verification code to the user's email address.
-      
-      This endpoint will:
-      1. Validate that the email exists in the system
-      2. Generate a new OTP code (invalidating any previous codes)
-      3. Send the new OTP to the provided email address
-      4. Return a success confirmation
-      
-      This can be used when the user didn't receive the initial OTP or when the OTP has expired.
-      Rate limiting may apply to prevent abuse.`,
-    }),
-    ApiBody({
-      description: 'Email address to resend OTP to',
-      schema: {
-        type: 'object',
-        properties: {
-          email: {
-            type: 'string',
-            format: 'email',
-            example: 'john.doe@example.com',
-            description: 'Email address that needs a new OTP',
-          },
-        },
-        required: ['email'],
-      },
-      examples: {
-        validRequest: {
-          summary: 'Valid Resend Request',
-          description: 'Request to resend OTP to an existing email',
-          value: {
-            email: 'john.doe@example.com',
-          },
-        },
-        invalidEmail: {
-          summary: 'Invalid Email Format',
-          description: 'Will return validation error',
-          value: {
-            email: 'invalid-email-format',
-          },
-        },
-      },
-    }),
-    ApiResponse({
-      status: HttpStatus.OK,
-      description: 'OTP resent successfully',
-      type: SuccessResponseDto,
-      schema: {
-        example: {
-          status: 'success',
-          message: 'OTP code has been resent to your email',
-        },
-      },
-    }),
-    ApiResponse({
-      status: HttpStatus.BAD_REQUEST,
-      description: 'Invalid email format or user not found',
-      type: ErrorResponseDto,
-      schema: {
-        examples: {
-          invalidEmail: {
-            summary: 'Invalid Email Format',
-            value: {
-              status: 'error',
-              error: {
-                message: 'email must be an email',
-                errorType: 'ValidationError',
-              },
-            },
-          },
-          userNotFound: {
-            summary: 'User Not Found',
-            value: {
-              status: 'error',
-              error: {
-                message: 'User with this email does not exist',
-                errorType: 'NotFoundError',
-              },
-            },
-          },
-        },
-      },
-    }),
-    ApiResponse({
-      status: HttpStatus.TOO_MANY_REQUESTS,
-      description: 'Rate limit exceeded',
-      type: ErrorResponseDto,
-      schema: {
-        example: {
-          status: 'error',
-          error: {
-            message: 'Too many OTP requests. Please wait before requesting again.',
-            errorType: 'RateLimitError',
-          },
-        },
-      },
-    }),
-    ApiResponse({
-      status: HttpStatus.INTERNAL_SERVER_ERROR,
-      description: 'Internal server error',
-      type: ErrorResponseDto,
-    }),
-  ),
-
   refreshToken: ApiDocs(
     ApiOperation({
       summary: 'Refresh authentication token',
@@ -520,6 +413,16 @@ export const AuthSwagger = {
       
       The refresh token is automatically included in the request via HTTP-only cookies.
       No request body is required.`,
+    }),
+    ...SHARED_HEADERS,
+    ApiHeader({
+      name: 'x-refresh-token',
+      description: 'Refresh token',
+      required: true,
+      schema: {
+        type: 'string',
+        example: 'refresh_token_12345',
+      },
     }),
     ApiResponse({
       status: HttpStatus.OK,
