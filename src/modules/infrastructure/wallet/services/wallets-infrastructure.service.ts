@@ -47,6 +47,7 @@ export class WalletsInfrastructureService {
       const wallets = [];
 
       for (const address of addresses) {
+        const chainTokens = tokens.filter(token => token.chain === address.chain);
         const wallet = await tx.wallet.create({
           data: {
             owner: { connect: { id: user.id } },
@@ -57,7 +58,7 @@ export class WalletsInfrastructureService {
             chain: address.chain,
             balances: {
               createMany: {
-                data: tokens.map(token => ({
+                data: chainTokens.map(token => ({
                   tokenId: token.id,
                 })),
               },
