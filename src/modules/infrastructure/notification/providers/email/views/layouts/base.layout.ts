@@ -320,7 +320,7 @@ export const baseLayout: EmailLayout = {
                 style="
                   max-width: 600px;
                   background: #ffffff;
-                  border-radius: 12px;
+                  border-radius: 5px;
                   overflow: hidden;
                   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
                 "

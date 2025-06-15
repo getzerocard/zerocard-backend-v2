@@ -29,6 +29,7 @@ export const getTemplateData = (event: NotificationEvent): EmailTemplateData => 
     case SEND_SIGN_IN_OTP:
       return {
         ...defaultTemplateData,
+        userName: 'there, Buddy 😎',
         otp: event.otp,
         loginTime: event.loginTime,
         loginLocation: event.loginLocation,
