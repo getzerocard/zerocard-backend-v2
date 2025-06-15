@@ -389,7 +389,7 @@ export const baseLayout: EmailLayout = {
                     >
                       <tr>
                         <td>
-                          <p class="greeting">{{greeting}} {{userName}},</p>
+                          <p class="greeting">{{greeting}} {{userName}}</p>
                         </td>
                       </tr>
 
