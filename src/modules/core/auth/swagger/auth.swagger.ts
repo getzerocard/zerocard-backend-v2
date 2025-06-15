@@ -414,6 +414,16 @@ export const AuthSwagger = {
       The refresh token is automatically included in the request via HTTP-only cookies.
       No request body is required.`,
     }),
+    ...SHARED_HEADERS,
+    ApiHeader({
+      name: 'x-refresh-token',
+      description: 'Refresh token',
+      required: true,
+      schema: {
+        type: 'string',
+        example: 'refresh_token_12345',
+      },
+    }),
     ApiResponse({
       status: HttpStatus.OK,
       description: 'Token refresh successful',

@@ -83,7 +83,6 @@ export class AuthService extends BaseAuthService {
     }
 
     const session = validSession.session;
-
     const isValidRefreshToken = await Util.validateHash(refreshToken, session.refreshToken);
 
     if (!isValidRefreshToken) {
