@@ -26,20 +26,21 @@ export class WalletEntity {
     return this.address;
   }
 
-  getWalletDetails() {
+  getBalances(): Record<string, number> {
     const tokenSums: Record<string, number> = {};
     for (const balance of this.balances) {
       const symbol = balance.token.symbol;
       const amount = Number(balance.balance);
       tokenSums[symbol] = (tokenSums[symbol] || 0) + amount;
     }
+    return tokenSums;
+  }
+
+  getWalletDetails() {
     return {
       address: this.address,
       chain: this.chain,
-      balances: Object.entries(tokenSums).map(([token, balance]) => ({
-        token,
-        balance,
-      })),
+      balances: this.getBalances(),
     };
   }
 }

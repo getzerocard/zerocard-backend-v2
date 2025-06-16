@@ -1,3 +1,9 @@
+import { ApiExcludeController } from '@nestjs/swagger';
+import { plainToInstance } from 'class-transformer';
+import { validateOrReject } from 'class-validator';
+import { AuthorizationRequestDto } from '../dtos';
+import { JitGatewayService } from '../services';
+import { PinoLogger } from 'nestjs-pino';
 import {
   Body,
   Controller,
@@ -7,12 +13,6 @@ import {
   Post,
   BadRequestException,
 } from '@nestjs/common';
-import { ApiExcludeController } from '@nestjs/swagger';
-import { JitGatewayService } from '../services';
-import { PinoLogger } from 'nestjs-pino';
-import { plainToInstance } from 'class-transformer';
-import { validateOrReject } from 'class-validator';
-import { AuthorizationRequestDto } from '../dtos';
 
 @Controller('sudo')
 @ApiExcludeController()

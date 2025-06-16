@@ -1,13 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PinoLogger } from 'nestjs-pino';
+import { RatesService } from '@/modules/infrastructure/rates';
 import { AuthorizationRequestDto } from '../dtos';
+import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class JitGatewayService {
   constructor(
     private readonly logger: PinoLogger,
     private readonly configService: ConfigService,
+    private readonly rateService: RatesService,
   ) {
     this.logger.setContext(JitGatewayService.name);
   }
