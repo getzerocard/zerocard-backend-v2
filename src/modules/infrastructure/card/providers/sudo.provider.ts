@@ -1,4 +1,4 @@
-import { CreateCardParams, CreateCustomerParams } from '../types';
+import { CreateCustomerParams, CreateCardParams } from '../types';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
 import { Injectable } from '@nestjs/common';
@@ -25,20 +25,31 @@ export class SudoProvider {
 
   async createCustomer(params: CreateCustomerParams) {
     try {
-      const response = await this.client.post('/customers', params);
+      const response = await this.client.post('/customers', {
+        ...params,
+        type: 'individual',
+        status: 'active',
+      });
       return response.data;
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('Failed to create sudo customer', error);
       throw error;
     }
   }
 
   async createCard(params: CreateCardParams) {
     try {
-      const response = await this.client.post('/cards', params);
+      const response = await this.client.post('/cards', {
+        ...params,
+        type: 'physical',
+        currency: 'ngn',
+        status: 'active',
+        sendPINSMS: true,
+        issuerCountry: 'NGA',
+      });
       return response.data;
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('Failed to create sudo card', error);
       throw error;
     }
   }

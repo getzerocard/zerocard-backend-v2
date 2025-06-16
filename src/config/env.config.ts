@@ -31,5 +31,6 @@ export const config = {
   sudo: {
     url: process.env.SUDO_URL,
     apiKey: process.env.SUDO_API_KEY,
+    authorizationSecret: process.env.SUDO_AUTHORIZATION_SECRET,
   },
 } as const;
