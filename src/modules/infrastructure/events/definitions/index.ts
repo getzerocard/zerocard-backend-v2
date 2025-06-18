@@ -1,7 +1,7 @@
-import { SignInEvents } from './signin.events';
-import { MfaEvents } from './mfa.events';
-import { UserEvents } from './user.event';
 import { CardEvents } from './card.events';
+import { MfaEvents } from './mfa.events';
+import { SignInEvents } from './signin.events';
+import { UserEvents } from './user.event';
 
 export const EventDefinitions = [...SignInEvents, ...MfaEvents, ...UserEvents, ...CardEvents];
 

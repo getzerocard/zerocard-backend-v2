@@ -1,12 +1,15 @@
+import { CARD_ORDER_CREATED, SEND_SIGN_IN_OTP } from '@/shared';
+import { cardOrderCreatedTemplate } from '../views/templates';
 import { NotificationEvent } from '../../../interfaces';
 import { EmailTemplateData } from '../views/interfaces';
 import { signInOtpTemplate } from '../views';
-import { SEND_SIGN_IN_OTP } from '@/shared';
 
 export const getTemplateForEvent = (eventName: string) => {
   switch (eventName) {
     case SEND_SIGN_IN_OTP:
       return signInOtpTemplate;
+    case CARD_ORDER_CREATED:
+      return cardOrderCreatedTemplate;
     default:
       throw new Error(`No template found for event: ${eventName}`);
   }
@@ -34,6 +37,12 @@ export const getTemplateData = (event: NotificationEvent): EmailTemplateData => 
         loginTime: event.loginTime,
         loginLocation: event.loginLocation,
         loginIP: event.loginIP,
+      };
+    case CARD_ORDER_CREATED:
+      return {
+        ...defaultTemplateData,
+        userName: event.userName,
+        deliveryAddress: `${event.address.street}, ${event.address.city}, ${event.address.state}`,
       };
     default:
       return defaultTemplateData;

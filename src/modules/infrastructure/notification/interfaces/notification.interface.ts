@@ -1,8 +1,12 @@
-import { Send2FATokenEvent, SendSignInOtpEvent } from '@/modules/infrastructure/events/definitions';
+import {
+  CardOrderCreatedEvent,
+  Send2FATokenEvent,
+  SendSignInOtpEvent,
+} from '@/modules/infrastructure/events/definitions';
 import { NotificationStatus } from '@/shared';
 import { INotificationOptions } from './';
 
-export type NotificationEvent = Send2FATokenEvent | SendSignInOtpEvent;
+export type NotificationEvent = Send2FATokenEvent | SendSignInOtpEvent | CardOrderCreatedEvent;
 
 export interface INotification {
   id?: string;

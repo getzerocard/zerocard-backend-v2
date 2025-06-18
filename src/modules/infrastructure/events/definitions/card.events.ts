@@ -8,6 +8,13 @@ export class CardOrderCreatedEvent implements Event {
     public readonly aggregateId: string,
     public readonly email: string,
     public readonly userName: string,
+    public readonly address: {
+      street: string;
+      city: string;
+      state: string;
+      country: string;
+      postalCode: string;
+    },
   ) {}
 }
 

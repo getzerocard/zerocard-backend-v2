@@ -52,7 +52,7 @@ export const baseLayout: EmailLayout = {
           html,
           body {
             margin: 0 auto !important;
-            padding: 60px 0 0 0 !important;
+            padding: 40px 0 0 0 !important;
             height: 100% !important;
             width: 100% !important;
             background: #f0f2f5 !important;
@@ -92,43 +92,116 @@ export const baseLayout: EmailLayout = {
           }
           .email-container {
             max-width: 600px;
-            margin: 20px auto 0 auto;
+            margin: 0 auto;
             background: #ffffff;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
           }
           .hero-section {
+            position: relative;
             background: #1f1f1f;
-            background: linear-gradient(
-              135deg,
-              #1f1f1f 0%,
-              #333333 50%,
-              #40ff00 100%
-            );
-            background-image: radial-gradient(
-                circle at 20% 80%,
-                rgba(64, 255, 0, 0.1) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 80% 20%,
-                rgba(255, 255, 255, 0.05) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 40% 40%,
-                rgba(64, 255, 0, 0.08) 0%,
-                transparent 50%
-              );
             text-align: center;
+            padding: 48px 40px;
+            overflow: hidden;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+          }
+          .hero-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #40ff00 1px, transparent 1px),
+              linear-gradient(-45deg, #40ff00 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.1;
+            z-index: 0;
+          }
+          .hero-section::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(
+              circle at 50% 50%,
+              rgba(64, 255, 0, 0.15) 0%,
+              transparent 70%
+            );
+            z-index: 0;
+          }
+          .stitching {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 2;
+          }
+          .stitching::before,
+          .stitching::after {
+            content: "";
+            position: absolute;
+            background: repeating-linear-gradient(
+              to right,
+              rgba(255, 255, 255, 0.1) 0px,
+              rgba(255, 255, 255, 0.1) 1px,
+              transparent 1px,
+              transparent 8px
+            );
+            height: 2px;
+            left: 10px;
+            right: 10px;
+          }
+          .stitching::before {
+            top: 10px;
+          }
+          .stitching::after {
+            bottom: 10px;
+          }
+          .stitching-left,
+          .stitching-right {
+            position: absolute;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background: repeating-linear-gradient(
+              to bottom,
+              rgba(255, 255, 255, 0.1) 0px,
+              rgba(255, 255, 255, 0.1) 1px,
+              transparent 1px,
+              transparent 8px
+            );
+          }
+          .stitching-left {
+            left: 10px;
+          }
+          .stitching-right {
+            right: 10px;
           }
           .logo {
+            position: relative;
+            z-index: 1;
             display: inline-block;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
             padding: 16px 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+          }
+          .logo:hover {
+            transform: translateY(-2px);
+          }
+          .logo img {
+            height: 36px !important;
+            width: auto;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
           }
           .greeting {
             font-family: "Inter", Arial, sans-serif;
@@ -145,91 +218,198 @@ export const baseLayout: EmailLayout = {
             line-height: 1.6;
             margin-bottom: 40px;
           }
-          .otp-label {
-            font-family: "Inter", Arial, sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            color: #666666;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 16px;
-          }
-          .otp-box {
-            display: inline-block;
-            background: #1f1f1f;
-            border: 2px solid #40ff00;
-            border-radius: 8px;
-            padding: 24px 32px;
-            margin-bottom: 16px;
-          }
-          .otp-code {
-            font-family: "Inter", Arial, sans-serif;
-            font-size: 36px;
-            font-weight: 700;
-            color: #40ff00;
-            letter-spacing: 15px;
-            margin: 0;
-          }
-          .otp-info {
-            font-family: "Inter", Arial, sans-serif;
-            font-size: 14px;
-            color: #999999;
-            margin: 0;
-          }
-          .security-alert {
-            background: #fff8e1;
-            border: 1px solid #ffcc02;
-            border-left: 4px solid #ff9800;
+          .order-status {
+            background: #e8f5e8;
+            border: 1px solid #40ff00;
             border-radius: 12px;
             padding: 24px;
             margin: 32px 0;
             text-align: center;
           }
-          .security-icon {
+          .status-icon {
             font-size: 32px;
             margin-bottom: 12px;
             display: block;
           }
-          .security-title {
+          .status-title {
             font-family: "Inter", Arial, sans-serif;
             font-size: 18px;
             font-weight: 600;
             color: #1f1f1f;
             margin-bottom: 8px;
           }
-          .security-description {
+          .status-description {
             font-family: "Inter", Arial, sans-serif;
             font-size: 14px;
             color: #666666;
             line-height: 1.5;
             margin: 0;
           }
-          .device-info {
+          .order-details {
             background: #f8f9fa;
             border: 1px solid #e9ecef;
             border-radius: 12px;
             padding: 24px;
             margin: 32px 0;
           }
-          .device-info-title {
+          .order-details-title {
             font-family: "Inter", Arial, sans-serif;
             font-size: 16px;
             font-weight: 600;
             color: #1f1f1f;
             margin-bottom: 16px;
           }
-          .device-label {
+          .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+          }
+          .detail-row:last-child {
+            border-bottom: none;
+          }
+          .detail-label {
             font-family: "Inter", Arial, sans-serif;
             font-size: 14px;
             color: #666666;
             font-weight: 500;
-            width: 30%;
           }
-          .device-value {
+          .detail-value {
             font-family: "Inter", Arial, sans-serif;
             font-size: 14px;
             color: #1f1f1f;
             font-weight: 600;
+          }
+          .card-preview {
+            background: linear-gradient(135deg, #1f1f1f 0%, #333333 100%);
+            border: 2px solid #40ff00;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 32px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+          }
+          .card-preview::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #40ff00 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.1;
+          }
+          .card-chip {
+            width: 40px;
+            height: 32px;
+            background: #ffd700;
+            border-radius: 6px;
+            margin: 0 auto 16px;
+            position: relative;
+            z-index: 1;
+          }
+          .card-number {
+            font-family: "Inter", Arial, sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+          }
+          .card-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            position: relative;
+            z-index: 1;
+          }
+          .card-holder,
+          .card-expiry {
+            font-family: "Inter", Arial, sans-serif;
+            font-size: 12px;
+            color: #cccccc;
+            text-transform: uppercase;
+          }
+          .shipping-info {
+            background: #fff8e1;
+            border: 1px solid #ffcc02;
+            border-left: 4px solid #ff9800;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 32px 0;
+          }
+          .shipping-title {
+            font-family: "Inter", Arial, sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin-bottom: 12px;
+          }
+          .shipping-address {
+            font-family: "Inter", Arial, sans-serif;
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.5;
+            margin: 0;
+          }
+          .next-steps {
+            background: #f0f8ff;
+            border: 1px solid #40a9ff;
+            border-left: 4px solid #1890ff;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 32px 0;
+          }
+          .next-steps-title {
+            font-family: "Inter", Arial, sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin-bottom: 16px;
+          }
+          .step-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+          }
+          .step-item {
+            font-family: "Inter", Arial, sans-serif;
+            font-size: 14px;
+            color: #666666;
+            line-height: 1.6;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+          }
+          .step-item::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #40ff00;
+            font-weight: bold;
+          }
+          .cta-button {
+            display: inline-block;
+            background: #40ff00;
+            color: #1f1f1f !important;
+            text-decoration: none;
+            font-family: "Inter", Arial, sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 16px 32px;
+            border-radius: 8px;
+            margin: 24px 0;
+            text-align: center;
+            transition: background-color 0.3s ease;
+          }
+          .cta-button:hover {
+            background: #33cc00;
           }
           .support-text {
             font-family: "Inter", Arial, sans-serif;
@@ -237,22 +417,6 @@ export const baseLayout: EmailLayout = {
             color: #666666;
             line-height: 1.5;
             margin-bottom: 24px;
-          }
-          .signature {
-            font-family: "Inter", Arial, sans-serif;
-            font-size: 16px;
-            font-weight: 600;
-            color: #1f1f1f;
-            margin-bottom: 4px;
-          }
-          .tagline {
-            font-family: "Inter", Arial, sans-serif;
-            font-size: 12px;
-            font-weight: 500;
-            color: #40ff00;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 32px;
           }
           .social-icons {
             margin-bottom: 24px;
@@ -284,12 +448,15 @@ export const baseLayout: EmailLayout = {
           }
           @media screen and (max-width: 600px) {
             .email-container {
-              margin: 20px 0 0 0;
+              margin: 0;
               border-radius: 0;
             }
-            .otp-code {
-              font-size: 28px !important;
-              letter-spacing: 4px !important;
+            .detail-row {
+              flex-direction: column;
+              align-items: flex-start;
+            }
+            .detail-value {
+              margin-top: 4px;
             }
           }
         </style>
