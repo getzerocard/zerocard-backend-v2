@@ -101,10 +101,10 @@ export class BlockradarWebhookService {
         create: {
           walletId: userWallet.id,
           tokenId: token.id,
-          balance: amount,
+          ledgerBalance: amount,
         },
         update: {
-          balance: {
+          ledgerBalance: {
             increment: amount,
           },
         },

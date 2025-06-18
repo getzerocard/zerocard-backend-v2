@@ -1,12 +1,28 @@
+import { SystemConfigService } from '@/modules/infrastructure/system-config';
+import { WalletsService } from '@/modules/core/wallets/services';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { SYSTEM_CONFIG_KEYS, UserEntity } from '@/shared';
 import { PrismaService } from '@/infrastructure';
-import { Injectable } from '@nestjs/common';
-import { UserEntity } from '@/shared';
 
 @Injectable()
 export class CardOrderService {
-  constructor(private readonly database: PrismaService) {}
+  constructor(
+    private readonly database: PrismaService,
+    private readonly walletsService: WalletsService,
+    private readonly systemConfigService: SystemConfigService,
+  ) {}
 
   async orderCard(user: UserEntity) {
+    const totalBalance = await this.walletsService.getTotalAvailableBalance(user.getId());
+
+    const cardOrderAmount = this.systemConfigService.get(SYSTEM_CONFIG_KEYS.CARD_ORDER_AMOUNT);
+
+    if (totalBalance < cardOrderAmount) {
+      throw new BadRequestException(
+        `Please fund your wallet with a minimum of ${cardOrderAmount} USDT or USDC to order a card`,
+      );
+    }
+
     const cardOrder = await this.database.cardOrder.create({
       data: {
         user: { connect: { id: user.getId() } },

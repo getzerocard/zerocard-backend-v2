@@ -26,12 +26,16 @@ export class WalletEntity {
     return this.address;
   }
 
-  getBalances(): Record<string, number> {
-    const tokenSums: Record<string, number> = {};
+  getBalances(): Record<string, { ledgerBalance: number; availableBalance: number }> {
+    const tokenSums: Record<string, { ledgerBalance: number; availableBalance: number }> = {};
     for (const balance of this.balances) {
       const symbol = balance.token.symbol;
-      const amount = Number(balance.balance);
-      tokenSums[symbol] = (tokenSums[symbol] || 0) + amount;
+      const ledgerBalance = Number(balance.ledgerBalance);
+      const availableBalance = Number(balance.availableBalance);
+      tokenSums[symbol] = {
+        ledgerBalance: ledgerBalance,
+        availableBalance: availableBalance,
+      };
     }
     return tokenSums;
   }

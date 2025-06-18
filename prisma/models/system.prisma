@@ -12,3 +12,14 @@ model SystemWallet {
   @@index([walletId, isActive, chain])
   @@map("system_wallets")
 }
+
+model SystemConfig {
+  id        String   @id @default(uuid())
+  key       String   @unique @map("key")
+  value     String   @map("value")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([key])
+  @@map("system_configs")
+}

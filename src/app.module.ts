@@ -3,6 +3,7 @@ import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { config, configValidationSchema } from '@/config';
 import { DeviceInfoMiddleware } from '@/common';
 import { ConfigModule } from '@nestjs/config';
+import { AppService } from './app.service';
 import { SharedModule } from '@/shared';
 import { MODULES } from '@/modules';
 
@@ -23,6 +24,7 @@ import { MODULES } from '@/modules';
     AppQueueModule,
     ...MODULES,
   ],
+  providers: [AppService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
