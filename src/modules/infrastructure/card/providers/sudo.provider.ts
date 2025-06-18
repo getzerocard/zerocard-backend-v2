@@ -46,10 +46,43 @@ export class SudoProvider {
         status: 'active',
         sendPINSMS: true,
         issuerCountry: 'NGA',
+        spendingControls: {
+          allowedCategories: [null],
+          blockedCategories: [null],
+          channels: {
+            mobile: true,
+            atm: true,
+            pos: true,
+            web: true,
+          },
+          spendingLimits: [
+            { interval: 'daily', amount: 10000000 }, // 10_000_000 NGN - 10 million naira
+          ],
+        },
       });
       return response.data;
     } catch (error) {
       this.logger.error('Failed to create sudo card', error);
+      throw error;
+    }
+  }
+
+  async getCardToken(sudoCardId: string) {
+    try {
+      const response = await this.client.post(`/cards/${sudoCardId}/token`);
+      return response.data;
+    } catch (error) {
+      this.logger.error('Failed to get sudo card token', error);
+      throw error;
+    }
+  }
+
+  async updateCard(sudoCardId: string, data: { status: 'inactive' }) {
+    try {
+      const response = await this.client.put(`/cards/${sudoCardId}`, data);
+      return response.data;
+    } catch (error) {
+      this.logger.error('Failed to update sudo card', error);
       throw error;
     }
   }

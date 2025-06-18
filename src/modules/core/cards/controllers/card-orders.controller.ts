@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '@/common';
 import { UserEntity } from '@/shared';
 import { Request } from 'express';
 
-@ApiTags('Cards - Orders')
+@ApiTags('Cards')
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

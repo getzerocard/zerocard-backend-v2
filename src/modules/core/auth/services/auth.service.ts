@@ -16,7 +16,7 @@ export class AuthService extends BaseAuthService {
   constructor(
     private readonly usersService: UsersService,
     protected readonly sessionService: SessionService,
-    protected readonly oauthService: OauthProviderService,
+    private readonly oauthService: OauthProviderService,
     private readonly tokenService: TokenService,
     protected readonly cache: CacheService,
     protected readonly eventBus: EventBusService,

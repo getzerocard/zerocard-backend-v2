@@ -23,6 +23,8 @@ model User {
   sessions           UserSession[]
   address            UserAddress?
   cardOrders         CardOrder[]
+  sudoCustomer       SudoCustomer?
+  cards              UserCard[]
 
   @@index([email, uniqueName, phoneNumber, dateOfBirth, gender, dialingCode, kycStatus, walletsGeneratedAt])
   @@map("users")

@@ -16,3 +16,52 @@ enum CardOrderStatus {
   COMPLETED  @map("completed")
   FAILED     @map("failed")
 }
+
+model SudoCustomer {
+  id         String   @id @default(uuid())
+  userId     String   @unique @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerId String   @unique @map("customer_id")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([userId])
+  @@map("sudo_customers")
+}
+
+model UserCard {
+  id          String     @id @default(uuid())
+  userId      String     @map("user_id")
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sudoCardId  String     @map("sudo_card_id")
+  bin         String     @map("bin")
+  last4       String     @map("last4")
+  expiryMonth String     @map("expiry_month")
+  expiryYear  String     @map("expiry_year")
+  brand       CardBrand  @map("brand")
+  currency    String     @map("currency")
+  status      CardStatus @default(ACTIVE) @map("status")
+  type        CardType   @default(Physical) @map("type")
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([userId])
+  @@index([sudoCardId])
+  @@map("user_cards")
+}
+
+enum CardBrand {
+  Verve      @map("verve")
+  Mastercard @map("mastercard")
+  Visa       @map("visa")
+}
+
+enum CardStatus {
+  ACTIVE   @map("active")
+  INACTIVE @map("inactive")
+}
+
+enum CardType {
+  Physical @map("physical")
+  Virtual  @map("virtual")
+}

@@ -13,8 +13,8 @@ export class UsersService {
     private readonly eventBus: EventBusService,
   ) {}
 
-  async create(email: string) {
-    const newUser = await this.usersRepository.create(email);
+  async create(email: string, include?: Prisma.UserInclude) {
+    const newUser = await this.usersRepository.create(email, include);
 
     this.eventBus.publish(new UserCreatedEvent(newUser.id, newUser.email, newUser.firstName));
 
@@ -25,12 +25,12 @@ export class UsersService {
     return user.getProfile();
   }
 
-  async findByEmail(email: string) {
-    return await this.usersRepository.findUser({ email });
+  async findByEmail(email: string, include?: Prisma.UserInclude) {
+    return await this.usersRepository.findUser({ email }, include);
   }
 
-  async findUserById(id: string) {
-    return await this.usersRepository.findUser({ id });
+  async findUserById(id: string, include?: Prisma.UserInclude) {
+    return await this.usersRepository.findUser({ id }, include);
   }
 
   async findUniqueName(uniqueName: string) {

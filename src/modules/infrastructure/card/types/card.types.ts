@@ -1,4 +1,5 @@
 export interface MapCardParams {
+  userId: string;
   firstName: string;
   lastName: string;
   dob: string;
@@ -19,9 +20,7 @@ export interface MapCardParams {
     postalCode: string;
     country: string;
   };
-  customerId: string;
-  fundingSourceId: string;
-  number: string;
+  cardNumber: string;
   expirationDate: string;
 }
 

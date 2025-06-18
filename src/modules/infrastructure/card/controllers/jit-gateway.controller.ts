@@ -30,6 +30,11 @@ export class JitGatewayController {
     @Body() body: any,
     @Headers('authorization') authHeader: string,
   ) {
+    console.log(JSON.stringify(body, null, 2));
+    console.log(authHeader);
+
+    return;
+
     const isValid = await this.jitGatewayService.validateSignature(authHeader);
 
     if (!isValid) {
