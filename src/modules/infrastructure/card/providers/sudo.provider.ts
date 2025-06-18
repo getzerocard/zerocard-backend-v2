@@ -42,10 +42,11 @@ export class SudoProvider {
       const response = await this.client.post('/cards', {
         ...params,
         type: 'physical',
-        currency: 'ngn',
+        currency: 'NGN',
         status: 'active',
         sendPINSMS: true,
         issuerCountry: 'NGA',
+        brand: 'Verve',
         spendingControls: {
           allowedCategories: [null],
           blockedCategories: [null],

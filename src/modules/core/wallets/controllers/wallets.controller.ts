@@ -9,8 +9,8 @@ import { Request } from 'express';
 
 @ApiTags('Wallets')
 @Controller('wallets')
-@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class WalletsController {
   constructor(
     private readonly walletsService: WalletsService,

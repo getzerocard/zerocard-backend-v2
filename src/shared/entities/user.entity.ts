@@ -69,9 +69,10 @@ export class UserEntity {
 
   getAddress(): Partial<UserAddress> | undefined {
     return {
-      street: this.address.street,
-      city: this.address.city,
-      state: this.address.state,
+      street: this.address?.street,
+      city: this.address?.city,
+      state: this.address?.state,
+      country: this.address?.country,
       postalCode: this.address?.postalCode,
     };
   }

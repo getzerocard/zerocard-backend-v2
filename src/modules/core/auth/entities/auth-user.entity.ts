@@ -1,11 +1,11 @@
+import { User, UserAddress } from '@prisma/client';
 import { OauthProvider } from '../types';
 import { UserEntity } from '@/shared';
-import { User, UserAddress } from '@prisma/client';
 
 export class AuthUserEntity extends UserEntity {
   private readonly user: User;
 
-  constructor(user: User) {
+  constructor(user: User & { address: UserAddress }) {
     super(
       user.id,
       user.email,
@@ -19,11 +19,12 @@ export class AuthUserEntity extends UserEntity {
       user.updatedAt,
       user.walletsGeneratedAt,
       user.kycStatus,
+      user.address,
     );
     this.user = user;
   }
 
-  static fromRawData(user: User & { address?: UserAddress }): AuthUserEntity {
+  static fromRawData(user: User & { address: UserAddress }): AuthUserEntity {
     return new AuthUserEntity(user);
   }
 

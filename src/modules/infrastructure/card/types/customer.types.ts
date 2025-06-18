@@ -1,7 +1,6 @@
 export interface CreateCustomerParams {
   name: string;
   phoneNumber: string;
-  emailAddress: string;
   billingAddress: {
     line1: string;
     city: string;
@@ -14,12 +13,8 @@ export interface CreateCustomerParams {
     lastName: string;
     dob: string;
     identity: {
-      type: 'bvn' | 'nin';
+      type: 'BVN' | 'NIN';
       number: string;
-    };
-    documents: {
-      idFrontUrl: string;
-      idBackUrl: string;
     };
   };
 }

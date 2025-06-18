@@ -1,7 +1,7 @@
 import { ApiExcludeController } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
-import { AuthorizationRequestDto } from '../dtos';
+import { JitGatewayEventDto } from '../dtos';
 import { JitGatewayService } from '../services';
 import { PinoLogger } from 'nestjs-pino';
 import {
@@ -26,15 +26,7 @@ export class JitGatewayController {
 
   @Post('jitgateway')
   @HttpCode(HttpStatus.OK)
-  async handleAuthorizationRequest(
-    @Body() body: any,
-    @Headers('authorization') authHeader: string,
-  ) {
-    console.log(JSON.stringify(body, null, 2));
-    console.log(authHeader);
-
-    return;
-
+  async handleJitGatewayWebhook(@Body() body: any, @Headers('authorization') authHeader: string) {
     const isValid = await this.jitGatewayService.validateSignature(authHeader);
 
     if (!isValid) {
@@ -42,9 +34,9 @@ export class JitGatewayController {
       throw new BadRequestException('Signature mismatch');
     }
 
-    const dto = plainToInstance(AuthorizationRequestDto, body);
+    const dto = plainToInstance(JitGatewayEventDto, body);
     await validateOrReject(dto);
 
-    await this.jitGatewayService.handleAuthorizationRequest(dto);
+    await this.jitGatewayService.handleJitGatewayEvent(dto);
   }
 }

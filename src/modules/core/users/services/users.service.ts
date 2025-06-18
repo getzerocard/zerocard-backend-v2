@@ -21,8 +21,10 @@ export class UsersService {
     return newUser;
   }
 
-  async getUserProfile(user: UserEntity) {
-    return user.getProfile();
+  async getUserProfile(userId: string) {
+    const user = await this.usersRepository.findUser({ id: userId }, { address: true });
+    const userEntity = UserEntity.fromRawData(user);
+    return userEntity.getProfile();
   }
 
   async findByEmail(email: string, include?: Prisma.UserInclude) {

@@ -1,11 +1,11 @@
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Get, Post, Put, Req, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard, ResponseMessage } from '@/common';
-import { UserEntity } from '@/shared';
-import { Request } from 'express';
 import { ActivateCardDto, UpdateCardStatusDto } from '../dtos';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard, ResponseMessage } from '@/common';
 import { CardService } from '../services';
 import { CardSwagger } from '../swagger';
+import { UserEntity } from '@/shared';
+import { Request } from 'express';
 
 @ApiTags('Cards')
 @Controller('')
@@ -16,7 +16,7 @@ export class CardsController {
 
   @Post('activate')
   @CardSwagger.activate
-  @ResponseMessage('Card activation successful')
+  @ResponseMessage('Card activated successfully')
   async activateCard(@Body() body: ActivateCardDto, @Req() req: Request) {
     const user = req.user as UserEntity;
     return this.cardService.activateCard(user, body);

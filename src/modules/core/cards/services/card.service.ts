@@ -17,6 +17,7 @@ export class CardService {
   }
 
   async activateCard(user: UserEntity, body: ActivateCardDto) {
+    const userAddress = user.getAddress();
     const card = await this.infrastructureService.mapCard({
       userId: user.id,
       firstName: user.firstName,
@@ -25,22 +26,17 @@ export class CardService {
       email: user.email,
       phoneNumber: user.phoneNumber,
       identity: {
-        type: 'bvn',
-        number: '',
-      },
-      documents: {
-        idFrontUrl: '',
-        idBackUrl: '',
+        type: 'BVN',
+        number: '12345678904', // TODO: Change to real BVN
       },
       address: {
-        line1: user.address.street,
-        city: user.address.city,
-        state: user.address.state,
-        postalCode: user.address.postalCode,
+        line1: userAddress.street,
+        city: userAddress.city,
+        state: userAddress.state,
+        postalCode: userAddress.postalCode,
         country: 'Nigeria',
       },
       cardNumber: body.cardNumber,
-      expirationDate: body.expiryDate,
     });
 
     return this.mapUserCard(card);
@@ -104,8 +100,6 @@ export class CardService {
       expiryMonth: card.expiryMonth,
       expiryYear: card.expiryYear,
       brand: card.brand,
-      bin: card.bin,
-      last4: card.last4,
       currency: card.currency,
     };
   }

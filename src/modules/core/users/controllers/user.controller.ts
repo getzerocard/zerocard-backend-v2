@@ -18,7 +18,7 @@ export class UserController {
   @UserSwagger.me
   async getUser(@Req() req: Request) {
     const user = req.user as UserEntity;
-    return await this.usersService.getUserProfile(user);
+    return await this.usersService.getUserProfile(user.id);
   }
 
   @Get('unique-name')

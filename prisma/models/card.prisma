@@ -34,8 +34,6 @@ model UserCard {
   userId      String     @map("user_id")
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   sudoCardId  String     @map("sudo_card_id")
-  bin         String     @map("bin")
-  last4       String     @map("last4")
   expiryMonth String     @map("expiry_month")
   expiryYear  String     @map("expiry_year")
   brand       CardBrand  @map("brand")

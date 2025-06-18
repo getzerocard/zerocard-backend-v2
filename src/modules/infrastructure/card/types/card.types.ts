@@ -6,12 +6,8 @@ export interface MapCardParams {
   email: string;
   phoneNumber: string;
   identity: {
-    type: 'bvn' | 'nin';
+    type: 'BVN' | 'NIN';
     number: string;
-  };
-  documents: {
-    idFrontUrl: string;
-    idBackUrl: string;
   };
   address: {
     line1: string;
@@ -21,12 +17,10 @@ export interface MapCardParams {
     country: string;
   };
   cardNumber: string;
-  expirationDate: string;
 }
 
 export interface CreateCardParams {
   customerId: string;
   fundingSourceId: string;
   number: string;
-  expirationDate: string;
 }

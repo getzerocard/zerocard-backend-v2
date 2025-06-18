@@ -9,7 +9,7 @@ export class ActivateCardDto {
   @IsString()
   @IsNotEmpty()
   @IsNumberString()
-  @Length(16, 16)
+  @Length(16, 18) // TODO: Change to 16, we are using 18 for testing purposes
   cardNumber: string;
 
   @ApiProperty({

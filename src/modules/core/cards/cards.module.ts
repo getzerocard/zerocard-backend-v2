@@ -1,7 +1,6 @@
 import { CardInfrastructureModule } from '@/modules/infrastructure/card';
 import { CardOrdersController, CardsController } from './controllers';
 import { CardOrderService, CardService } from './services';
-import { CardsRepository } from './repsitories';
 import { RouterModule } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 
@@ -17,7 +16,7 @@ import { Module } from '@nestjs/common';
     CardInfrastructureModule,
   ],
   controllers: [CardOrdersController, CardsController],
-  providers: [CardsRepository, CardService, CardOrderService],
+  providers: [CardService, CardOrderService],
   exports: [CardService],
 })
 export class CardsModule {}

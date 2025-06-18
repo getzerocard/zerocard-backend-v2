@@ -23,67 +23,64 @@ export class CardInfrastructureService {
    * @returns The mapped card
    */
   async mapCard(params: MapCardParams) {
-    const customer = await this.provider.createCustomer({
-      name: `${params.firstName} ${params.lastName}`,
-      phoneNumber: params.phoneNumber,
-      emailAddress: params.email,
-      billingAddress: {
-        line1: params.address.line1,
-        city: params.address.city,
-        state: params.address.state,
-        postalCode: params.address.postalCode,
-        country: params.address.country,
-      },
-      individual: {
-        firstName: params.firstName,
-        lastName: params.lastName,
-        dob: params.dob,
-        identity: {
-          type: params.identity.type,
-          number: params.identity.number,
+    try {
+      const customer = await this.provider.createCustomer({
+        name: `${params.firstName} ${params.lastName}`,
+        phoneNumber: params.phoneNumber,
+        billingAddress: {
+          line1: params.address.line1,
+          city: params.address.city,
+          state: params.address.state,
+          postalCode: params.address.postalCode,
+          country: params.address.country,
         },
-        documents: {
-          idFrontUrl: params.documents.idFrontUrl,
-          idBackUrl: params.documents.idBackUrl,
+        individual: {
+          firstName: params.firstName,
+          lastName: params.lastName,
+          dob: params.dob.replace(/-/g, '/'), // sudo requires date of birth in YYYY/MM/DD format
+          identity: {
+            type: params.identity.type,
+            number: params.identity.number,
+          },
         },
-      },
-    });
+      });
 
-    if (!customer) {
-      this.logger.fatal(customer, 'Failed to create sudo customer');
-      throw new BadRequestException('Oops! Failed to activate card, try again later.');
+      if (!customer) {
+        this.logger.fatal('Failed to create sudo customer', customer);
+        throw new BadRequestException('Oops! Failed to activate card, try again later.');
+      }
+
+      const customerData = customer.data;
+
+      await this.storeSudoCustomer(params.userId, customerData._id);
+
+      const card = await this.provider.createCard({
+        customerId: customerData._id,
+        fundingSourceId: this.configService.get('sudo.fundingSourceId'), // we are using gateway funding source, already created on sudo dashboard.
+        number: params.cardNumber,
+      });
+
+      if (!card) {
+        this.logger.fatal(card, 'Failed to create sudo card');
+        throw new BadRequestException('Oops! Failed to activate card, try again later.');
+      }
+
+      const cardData = card.data;
+
+      await this.storeSudoCard({
+        userId: params.userId,
+        sudoCardId: cardData._id,
+        expiryMonth: cardData.expiryMonth,
+        expiryYear: cardData.expiryYear,
+        brand: cardData.brand,
+        currency: cardData.currency,
+      });
+
+      return card;
+    } catch (error) {
+      this.logger.error(error);
+      throw new InternalServerErrorException('Failed to map card');
     }
-
-    await this.storeSudoCustomer(params.userId, customer.id);
-
-    const card = await this.provider.createCard({
-      customerId: customer.id,
-      fundingSourceId: this.configService.get('sudo.fundingSourceId'), // we are using gateway funding source, already created on sudo dashboard.
-      number: params.cardNumber,
-      expirationDate: params.expirationDate,
-    });
-
-    if (!card) {
-      this.logger.fatal(card, 'Failed to create sudo card');
-      throw new BadRequestException('Oops! Failed to activate card, try again later.');
-    }
-
-    const maskedPan = card.maskedPan;
-    const bin = maskedPan.slice(0, 6);
-    const last4 = maskedPan.slice(-4);
-
-    await this.storeSudoCard({
-      userId: params.userId,
-      sudoCardId: card.id,
-      expiryMonth: card.expiryMonth,
-      expiryYear: card.expiryYear,
-      brand: card.brand,
-      currency: card.currency,
-      bin,
-      last4,
-    });
-
-    return card;
   }
 
   /**
@@ -136,8 +133,6 @@ export class CardInfrastructureService {
     expiryYear: string;
     brand: CardBrand;
     currency: string;
-    bin: string;
-    last4: string;
   }) {
     try {
       return await this.database.userCard.create({
@@ -148,8 +143,6 @@ export class CardInfrastructureService {
           expiryYear: params.expiryYear,
           brand: params.brand,
           currency: params.currency,
-          bin: params.bin,
-          last4: params.last4,
         },
       });
     } catch (error) {
