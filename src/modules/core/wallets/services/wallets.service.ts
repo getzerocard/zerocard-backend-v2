@@ -43,21 +43,17 @@ export class WalletsService {
       },
     });
 
-    return wallets.map(wallet => WalletEntity.fromRawData(wallet).getWalletDetails());
-  }
+    // We don't want to return the id and balance id of the wallet and balances
+    const walletDetails = wallets.map(wallet => {
+      const walletDetails = WalletEntity.fromRawData(wallet).getWalletDetails();
+      delete walletDetails.id;
+      walletDetails.balances.forEach(balance => {
+        delete balance.id;
+      });
+      return walletDetails;
+    });
 
-  async getTotalAvailableBalance(userId: string): Promise<number> {
-    const wallets = await this.getWallets(userId);
-
-    const totalUsdtAvailableBalance = wallets.reduce((total, wallet) => {
-      return total + (wallet.balances.usdt?.availableBalance || 0);
-    }, 0);
-
-    const totalUsdcAvailableBalance = wallets.reduce((total, wallet) => {
-      return total + (wallet.balances.usdc?.availableBalance || 0);
-    }, 0);
-
-    return totalUsdtAvailableBalance + totalUsdcAvailableBalance;
+    return walletDetails;
   }
 
   /**

@@ -26,22 +26,42 @@ export class WalletEntity {
     return this.address;
   }
 
-  getBalances(): Record<string, { id: string; ledgerBalance: number; availableBalance: number }> {
-    const tokenSums: Record<
-      string,
-      { id: string; ledgerBalance: number; availableBalance: number }
-    > = {};
+  // getBalances(): Record<string, { id: string; ledgerBalance: number; availableBalance: number }> {
+  //   const tokenSums: Record<
+  //     string,
+  //     { id: string; ledgerBalance: number; availableBalance: number }
+  //   > = {};
+  //   for (const balance of this.balances) {
+  //     const symbol = balance.token.symbol;
+  //     const ledgerBalance = Number(balance.ledgerBalance);
+  //     const availableBalance = Number(balance.availableBalance);
+  //     tokenSums[symbol] = {
+  //       id: balance.id,
+  //       ledgerBalance: ledgerBalance,
+  //       availableBalance: availableBalance,
+  //     };
+  //   }
+  //   return tokenSums;
+  // }
+
+  getBalances(): {
+    id: string;
+    token: string;
+    ledgerBalance: number;
+    availableBalance: number;
+  }[] {
+    const balancesArray = [];
+
     for (const balance of this.balances) {
-      const symbol = balance.token.symbol;
-      const ledgerBalance = Number(balance.ledgerBalance);
-      const availableBalance = Number(balance.availableBalance);
-      tokenSums[symbol] = {
+      balancesArray.push({
         id: balance.id,
-        ledgerBalance: ledgerBalance,
-        availableBalance: availableBalance,
-      };
+        token: balance.token.symbol,
+        ledgerBalance: Number(balance.ledgerBalance),
+        availableBalance: Number(balance.availableBalance),
+      });
     }
-    return tokenSums;
+
+    return balancesArray;
   }
 
   getWalletDetails() {
