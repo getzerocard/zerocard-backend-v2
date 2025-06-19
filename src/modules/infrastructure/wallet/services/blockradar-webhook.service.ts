@@ -1,3 +1,5 @@
+import { EventBusService, TokenDepositedEvent } from '@/modules/infrastructure/events';
+import { BlockradarSwapWebhookService } from './blockradar-SwapWebhook.service';
 import { SystemWalletService } from '@/modules/core/system';
 import { BlockradarWebhookEventDto } from '../dtos';
 import { BlockradarWebhookEvent } from '../types';
@@ -12,6 +14,8 @@ export class BlockradarWebhookService {
     private readonly logger: PinoLogger,
     private readonly systemWalletService: SystemWalletService,
     private readonly database: PrismaService,
+    private readonly eventBus: EventBusService,
+    private readonly blockradarSwapWebhookService: BlockradarSwapWebhookService,
   ) {
     this.logger.setContext(BlockradarWebhookService.name);
   }
@@ -23,6 +27,12 @@ export class BlockradarWebhookService {
       case BlockradarWebhookEvent.DEPOSIT_SUCCESS:
         await this.handleDepositSuccess(event.data);
         break;
+      case BlockradarWebhookEvent.SWAP_SUCCESS:
+        await this.blockradarSwapWebhookService.handleSwapSuccess(event.data);
+        break;
+      case BlockradarWebhookEvent.SWAP_FAILED:
+        await this.blockradarSwapWebhookService.handleSwapfailed(event.data);
+        break;
       default:
         this.logger.warn(`Unknown event: ${event.event}`);
         break;
@@ -33,9 +43,29 @@ export class BlockradarWebhookService {
     const recipientAddress = data.recipientAddress;
     const amount = data.amount;
     const asset = data.asset.symbol.toLowerCase();
-    const reference = data.reference;
+    const walletId = data.wallet.id;
+    const reference = data.id;
     const senderAddress = data.senderAddress;
     const chain = data.blockchain.name;
+    const aggregateId = data.wallet.name;
+    const hash = data.hash;
+    const addressId = data.address.id;
+    const fromAssetId = data.asset.id;
+    const metadata = 'deposit-swap';
+
+    this.eventBus.publish(
+      new TokenDepositedEvent(
+        walletId,
+        addressId,
+        fromAssetId,
+        amount,
+        reference,
+        metadata,
+        recipientAddress,
+        asset,
+        aggregateId
+      ),
+    );
 
     await this.database.$transaction(async tx => {
       // get the user wallet based on the recipient address
@@ -76,6 +106,7 @@ export class BlockradarWebhookService {
               entryType: 'CREDIT',
               asset,
               amount,
+              hash,
               memo: `Deposit from ${senderAddress}`,
             },
           },
