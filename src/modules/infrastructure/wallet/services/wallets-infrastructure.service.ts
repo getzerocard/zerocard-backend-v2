@@ -52,8 +52,6 @@ export class WalletsInfrastructureService {
         const wallet = await tx.wallet.create({
           data: {
             owner: { connect: { id: user.id } },
-            identifier: `${username}_${address.chain}_wallet`,
-            name: `${username}'s ${address.chain} Wallet`,
             address: address.address,
             providerWalletId: address.id,
             chain: address.chain,

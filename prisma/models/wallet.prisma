@@ -1,7 +1,5 @@
 model Wallet {
   id               String               @id @default(uuid())
-  identifier       String               @unique @map("identifier") // A human-readable identifier, e.g. “User123_USD_Wallet”
-  name             String               @map("name") // e.g. “User 123 USD Wallet”
   ownerId          String               @map("owner_id")
   owner            User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   chain            WalletChain          @map("chain")
@@ -13,7 +11,6 @@ model Wallet {
   entries          TransactionEntry[]
   balances         WalletTokenBalance[]
 
-  @@index([identifier])
   @@index([ownerId])
   @@index([address])
   @@index([chain])

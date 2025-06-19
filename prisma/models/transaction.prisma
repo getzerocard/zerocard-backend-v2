@@ -29,6 +29,7 @@ enum TransactionCategory {
   TRANSFER   @map("transfer")
   FEE        @map("fee")
   REFUND     @map("refund")
+  CARD_ORDER @map("card_order")
 }
 
 model TransactionEntry {

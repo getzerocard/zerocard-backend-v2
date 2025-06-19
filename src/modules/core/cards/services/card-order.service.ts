@@ -1,36 +1,83 @@
-import { SystemConfigService } from '@/modules/infrastructure/system-config';
 import { CardOrderCreatedEvent, EventBusService } from '@/modules/infrastructure/events';
+import { SystemConfigService } from '@/modules/infrastructure/system-config';
 import { WalletsService } from '@/modules/core/wallets/services';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { SYSTEM_CONFIG_KEYS, UserEntity } from '@/shared';
+import { SYSTEM_CONFIG_KEYS, UserEntity, Util } from '@/shared';
 import { PrismaService } from '@/infrastructure';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class CardOrderService {
   constructor(
     private readonly database: PrismaService,
+    private readonly logger: PinoLogger,
     private readonly walletsService: WalletsService,
     private readonly systemConfigService: SystemConfigService,
     private readonly eventBus: EventBusService,
   ) {}
 
   async orderCard(user: UserEntity) {
-    const totalBalance = await this.walletsService.getTotalAvailableBalance(user.getId());
-
     const cardOrderAmount = Number(
       this.systemConfigService.get(SYSTEM_CONFIG_KEYS.CARD_ORDER_AMOUNT),
     );
 
-    if (totalBalance < cardOrderAmount) {
+    if (!cardOrderAmount) {
+      this.logger.error('Card order amount is not set');
       throw new BadRequestException(
-        `Please fund your wallet with a minimum of ${cardOrderAmount} USDT or USDC to order a card`,
+        'You cannot order a card at the moment, please try again later.',
       );
     }
 
-    const cardOrder = await this.database.cardOrder.create({
-      data: {
-        user: { connect: { id: user.getId() } },
-      },
+    const allocations = await this.walletsService.getWalletAllocationsForAmount(
+      user.getId(),
+      cardOrderAmount,
+      `Please fund your wallet with a minimum of ${cardOrderAmount} USDT or USDC to order a card`,
+    );
+
+    const cardOrder = await this.database.$transaction(async tx => {
+      const reference = Util.generateUlid('co'); // co = card order
+      const cardOrder = await this.database.cardOrder.create({
+        data: {
+          user: { connect: { id: user.getId() } },
+        },
+      });
+
+      await tx.transaction.create({
+        data: {
+          reference,
+          user: { connect: { id: user.getId() } },
+          category: 'CARD_ORDER',
+          status: 'COMPLETED',
+          description: 'Card order',
+          completedAt: new Date(),
+          entries: {
+            createMany: {
+              data: allocations.map(allocation => ({
+                walletId: allocation.id,
+                entryType: 'DEBIT',
+                asset: allocation.token,
+                amount: allocation.amount,
+                memo: 'Card order',
+              })),
+            },
+          },
+        },
+      });
+
+      for (const allocation of allocations) {
+        await tx.walletTokenBalance.update({
+          where: {
+            id: allocation.balanceId,
+          },
+          data: {
+            availableBalance: {
+              decrement: allocation.amount,
+            },
+          },
+        });
+      }
+
+      return cardOrder;
     });
 
     const address = user.getAddress();
