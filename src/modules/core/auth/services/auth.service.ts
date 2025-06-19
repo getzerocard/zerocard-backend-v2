@@ -16,7 +16,7 @@ export class AuthService extends BaseAuthService {
   constructor(
     private readonly usersService: UsersService,
     protected readonly sessionService: SessionService,
-    protected readonly oauthService: OauthProviderService,
+    private readonly oauthService: OauthProviderService,
     private readonly tokenService: TokenService,
     protected readonly cache: CacheService,
     protected readonly eventBus: EventBusService,
@@ -40,7 +40,9 @@ export class AuthService extends BaseAuthService {
 
   async completeSignIn(dto: CompleteSignInDto, deviceInfo: DeviceInfo) {
     const { email, code } = dto;
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.usersService.findByEmail(email, {
+      address: true,
+    });
 
     if (!user) {
       throw new BadRequestException('Invalid credentials');
@@ -51,7 +53,9 @@ export class AuthService extends BaseAuthService {
 
   async oauthSignin(provider: OauthProvider, dto: OAuthSigninDto, deviceInfo: DeviceInfo) {
     const oauthUser = await this.oauthService.findOauthUser(provider, dto);
-    const user = await this.usersService.findByEmail(oauthUser.email);
+    const user = await this.usersService.findByEmail(oauthUser.email, {
+      address: true,
+    });
 
     if (user) {
       const authUser = AuthUserEntity.fromRawData(user);

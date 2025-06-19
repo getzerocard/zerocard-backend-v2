@@ -32,7 +32,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Session expired, please login again');
     }
 
-    const user = await this.userService.findUserById(payload.sub);
+    const user = await this.userService.findUserById(payload.sub, {
+      address: true,
+    });
 
     if (!user) {
       this.logger.error(`User ${payload.sub} not found`);

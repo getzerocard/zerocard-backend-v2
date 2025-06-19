@@ -43,8 +43,6 @@ export class BlockradarWebhookService {
         where: { address: recipientAddress },
       });
 
-      console.log('User Wallet >>>', userWallet);
-
       if (!userWallet) {
         this.logger.fatal('No user wallet found for the blockradar deposit', { data });
         throw new Error('No user wallet found for the blockradar deposit');
@@ -103,10 +101,10 @@ export class BlockradarWebhookService {
         create: {
           walletId: userWallet.id,
           tokenId: token.id,
-          balance: amount,
+          ledgerBalance: amount,
         },
         update: {
-          balance: {
+          ledgerBalance: {
             increment: amount,
           },
         },

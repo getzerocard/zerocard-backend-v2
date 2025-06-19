@@ -1,3 +1,9 @@
+import { ApiExcludeController } from '@nestjs/swagger';
+import { BlockradarWebhookService } from '../services';
+import { BlockradarWebhookEventDto } from '../dtos';
+import { plainToInstance } from 'class-transformer';
+import { validateOrReject } from 'class-validator';
+import { PinoLogger } from 'nestjs-pino';
 import {
   BadRequestException,
   Body,
@@ -7,12 +13,6 @@ import {
   HttpStatus,
   Post,
 } from '@nestjs/common';
-import { BlockradarWebhookService } from '../services';
-import { BlockradarWebhookEventDto } from '../dtos';
-import { plainToInstance } from 'class-transformer';
-import { validateOrReject } from 'class-validator';
-import { PinoLogger } from 'nestjs-pino';
-import { ApiExcludeController } from '@nestjs/swagger';
 
 @Controller('blockradar')
 @ApiExcludeController()
@@ -38,6 +38,8 @@ export class BlockradarController {
 
     const dto = plainToInstance(BlockradarWebhookEventDto, body);
     await validateOrReject(dto);
+
+    console.log('dto', JSON.stringify(dto, null, 2));
 
     await this.webhookService.handleWebhook(dto);
   }

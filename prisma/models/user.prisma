@@ -22,6 +22,9 @@ model User {
   transactions       Transaction[]
   sessions           UserSession[]
   address            UserAddress?
+  cardOrders         CardOrder[]
+  sudoCustomer       SudoCustomer?
+  cards              UserCard[]
 
   @@index([email, uniqueName, phoneNumber, dateOfBirth, gender, dialingCode, kycStatus, walletsGeneratedAt])
   @@map("users")
@@ -50,19 +53,19 @@ model OAuthConnection {
 }
 
 model UserAddress {
-  id        String   @id @default(uuid())
-  userId    String   @unique @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  address   String   @map("address")
-  state     String?  @map("state")
-  city      String?  @map("city")
-  country   String?  @map("country")
-  zipCode   String?  @map("zip_code")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  id         String   @id @default(uuid())
+  userId     String   @unique @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  street     String   @map("street")
+  state      String   @map("state")
+  city       String   @map("city")
+  country    String?  @map("country")
+  postalCode String?  @map("postal_code")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   @@index([userId])
-  @@index([country, state, city, zipCode])
+  @@index([country, state, city, postalCode])
   @@map("user_addresses")
 }
 

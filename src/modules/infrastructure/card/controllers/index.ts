@@ -1,1 +1,1 @@
-export * from './sudo.controller';
+export * from './jit-gateway.controller';

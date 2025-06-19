@@ -26,20 +26,32 @@ export class WalletEntity {
     return this.address;
   }
 
-  getWalletDetails() {
-    const tokenSums: Record<string, number> = {};
+  getBalances(): {
+    id: string;
+    token: string;
+    ledgerBalance: number;
+    availableBalance: number;
+  }[] {
+    const balancesArray = [];
+
     for (const balance of this.balances) {
-      const symbol = balance.token.symbol;
-      const amount = Number(balance.balance);
-      tokenSums[symbol] = (tokenSums[symbol] || 0) + amount;
+      balancesArray.push({
+        id: balance.id,
+        token: balance.token.symbol,
+        ledgerBalance: Number(balance.ledgerBalance),
+        availableBalance: Number(balance.availableBalance),
+      });
     }
+
+    return balancesArray;
+  }
+
+  getWalletDetails() {
     return {
+      id: this.id,
       address: this.address,
       chain: this.chain,
-      balances: Object.entries(tokenSums).map(([token, balance]) => ({
-        token,
-        balance,
-      })),
+      balances: this.getBalances(),
     };
   }
 }

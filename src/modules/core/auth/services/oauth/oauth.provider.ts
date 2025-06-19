@@ -7,7 +7,7 @@ import { OauthProvider } from '../../types';
 import { OAuthSigninDto } from '../../dtos';
 import { PinoLogger } from 'nestjs-pino';
 import { IOAuthUser } from '../../types';
-import { User } from '@prisma/client';
+import { User, UserAddress } from '@prisma/client';
 
 @Injectable()
 export class OauthProviderService {
@@ -35,7 +35,9 @@ export class OauthProviderService {
       where: {
         email,
       },
-      include: {},
+      include: {
+        address: true,
+      },
     });
     // const user = await this.userService.findUser(
     //   { email: email },
@@ -103,7 +105,10 @@ export class OauthProviderService {
   /**
    * Create a new user from OAuth data
    */
-  async createUserFromOAuth(oauthUser: IOAuthUser, provider: OauthProvider): Promise<User> {
+  async createUserFromOAuth(
+    oauthUser: IOAuthUser,
+    provider: OauthProvider,
+  ): Promise<User & { address: UserAddress }> {
     return this.database.user.create({
       data: {
         email: oauthUser.email,
@@ -114,6 +119,9 @@ export class OauthProviderService {
         oauthConnections: {
           create: [{ provider, providerUserId: oauthUser.providerUserId }],
         },
+      },
+      include: {
+        address: true,
       },
     });
   }

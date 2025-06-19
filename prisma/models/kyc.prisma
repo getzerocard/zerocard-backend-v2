@@ -1,0 +1,7 @@
+model Kyc {
+  id        String    @id @default(uuid())
+  userId    String    @unique
+  status    KycStatus @default(PENDING)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}

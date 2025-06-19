@@ -6,12 +6,13 @@ import { Prisma } from '@prisma/client';
 export class UsersRepository {
   constructor(private readonly database: PrismaService) {}
 
-  async create(email: string) {
+  async create(email: string, include?: Prisma.UserInclude) {
     try {
       return await this.database.user.create({
         data: {
           email,
         },
+        include,
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -23,11 +24,15 @@ export class UsersRepository {
     }
   }
 
-  async findUser(where: Prisma.UserWhereUniqueInput) {
-    return await this.database.user.findUnique({ where });
+  async findUser(where: Prisma.UserWhereUniqueInput, include?: Prisma.UserInclude) {
+    return await this.database.user.findUnique({ where, include });
   }
 
-  async updateUser(where: Prisma.UserWhereUniqueInput, data: Prisma.UserUpdateInput) {
-    return await this.database.user.update({ where, data });
+  async updateUser(
+    where: Prisma.UserWhereUniqueInput,
+    data: Prisma.UserUpdateInput,
+    include?: Prisma.UserInclude,
+  ) {
+    return await this.database.user.update({ where, data, include });
   }
 }

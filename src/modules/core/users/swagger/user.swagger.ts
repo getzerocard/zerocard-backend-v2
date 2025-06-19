@@ -1,8 +1,8 @@
-import { HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { UpdateUniqueNameDto, UpdateAddressDto } from '../dtos';
 import { ApiDocs } from '@/common/decorators';
 import { ApiProperty } from '@nestjs/swagger';
-import { UpdateUniqueNameDto } from '../dtos';
+import { HttpStatus } from '@nestjs/common';
 
 class SuccessResponseDto {
   @ApiProperty({
@@ -293,6 +293,102 @@ export const UserSwagger = {
                 errorType: 'ValidationError',
               },
             },
+          },
+        },
+      },
+    }),
+    ApiResponse({
+      status: HttpStatus.UNAUTHORIZED,
+      description: 'User is not authenticated',
+      type: ErrorResponseDto,
+      schema: {
+        example: {
+          status: 'error',
+          error: {
+            message: 'Unauthorized',
+            errorType: 'AuthenticationError',
+          },
+        },
+      },
+    }),
+    ApiResponse({
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      description: 'Internal server error',
+      type: ErrorResponseDto,
+    }),
+  ),
+
+  updateAddress: ApiDocs(
+    ApiOperation({
+      summary: 'Update user address',
+      description: `Updates the address information of the authenticated user.
+      
+      This endpoint will:
+      1. Validate the address information
+      2. Update the user's address details
+      
+      The address must include:
+      - Street address
+      - City
+      - State
+      - Postal code (optional)
+      
+      Requires authentication via JWT token in Authorization header.`,
+    }),
+    ApiBody({
+      type: UpdateAddressDto,
+      description: 'New address information for the user',
+      examples: {
+        validAddress: {
+          summary: 'Valid Address',
+          description: 'A complete address with all fields',
+          value: {
+            street: '123 Main St',
+            city: 'San Francisco',
+            state: 'CA',
+            postalCode: '94105',
+          },
+        },
+        minimalAddress: {
+          summary: 'Minimal Address',
+          description: 'An address without postal code',
+          value: {
+            street: '123 Main St',
+            city: 'San Francisco',
+            state: 'CA',
+          },
+        },
+      },
+    }),
+    ApiResponse({
+      status: HttpStatus.OK,
+      description: 'Address updated successfully',
+      type: UserProfileResponseDto,
+      schema: {
+        example: {
+          status: 'success',
+          user: {
+            email: 'john.doe@example.com',
+            firstName: 'John',
+            lastName: 'Doe',
+            avatar: 'https://example.com/avatar.jpg',
+            uniqueName: 'john_doe_123',
+            walletsGenerated: true,
+            completedKyc: true,
+          },
+        },
+      },
+    }),
+    ApiResponse({
+      status: HttpStatus.BAD_REQUEST,
+      description: 'Invalid address information',
+      type: ErrorResponseDto,
+      schema: {
+        example: {
+          status: 'error',
+          error: {
+            message: 'Invalid address information',
+            errorType: 'ValidationError',
           },
         },
       },
