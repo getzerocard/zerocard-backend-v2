@@ -26,9 +26,9 @@ export class JitGatewayService {
   async handleJitGatewayEvent(body: JitGatewayEventDto) {
     this.logger.info('Sudo JIT Gateway: Handling event', { body });
 
-    const { event } = body;
+    const { type } = body;
 
-    switch (event) {
+    switch (type) {
       case JitGatewayWebhookEvent.AUTHORIZATION_REQUEST:
         break;
       case JitGatewayWebhookEvent.AUTHORIZATION_DECLINED:
@@ -36,26 +36,22 @@ export class JitGatewayService {
       case JitGatewayWebhookEvent.TRANSACTION_CREATED:
         break;
       case JitGatewayWebhookEvent.CARD_BALANCE:
-        break;
+        return await this.handleCardBalance(body);
+      default:
+        this.logger.error(`Sudo JIT Gateway: Invalid event type: ${type}`);
+        // TODO: verify that this is the correct response
+        return {
+          statusCode: 400,
+          responseCode: '01',
+          data: {
+            message: 'Invalid event type',
+          },
+        };
     }
-
-    // const {
-    //   customer,
-    //   card,
-    //   account,
-    //   merchant,
-    //   terminal,
-    //   transactionMetadata,
-    //   pendingRequest,
-    //   verification,
-    //   feeDetails,
-    // } = data;
-
-    return true;
   }
 
-  private async getUserWallet(userId: string): Promise<WalletEntity> {
-    const wallet = await this.prismaService.wallet.findFirst({
+  private async getUserWallet(userId: string): Promise<WalletEntity[]> {
+    const wallets = await this.prismaService.wallet.findMany({
       where: {
         ownerId: userId,
         isActive: true,
@@ -69,9 +65,7 @@ export class JitGatewayService {
       },
     });
 
-    const walletEntity = WalletEntity.fromRawData(wallet);
-
-    return walletEntity;
+    return wallets.map(wallet => WalletEntity.fromRawData(wallet));
   }
 
   private async handleAuthorizationRequest(body: JitGatewayEventDto) {
@@ -87,25 +81,57 @@ export class JitGatewayService {
   }
 
   private async handleCardBalance(body: JitGatewayEventDto) {
-    this.logger.info('Sudo JIT Gateway: Handling card balance', { body });
+    this.logger.info(`Sudo JIT Gateway: Handling card balance: ${body._id}`);
+
+    const { customer } = body.data.object;
+
     const sudoCustomer = await this.prismaService.sudoCustomer.findFirst({
       where: {
-        customerId: body.data.customer.id,
+        customerId: customer._id,
       },
     });
 
     if (!sudoCustomer) {
-      this.logger.error('Sudo JIT Gateway: Customer not found', { body });
+      this.logger.error(`Sudo JIT Gateway: Customer not found: ${customer._id}`);
       return;
     }
 
-    const wallet = await this.getUserWallet(sudoCustomer.userId);
+    const wallets = await this.getUserWallet(sudoCustomer.userId);
 
-    if (!wallet) {
-      this.logger.error('Sudo JIT Gateway: Wallet not found', { body });
+    if (!wallets || wallets.length === 0) {
+      this.logger.error(`Sudo JIT Gateway: Wallet not found: ${sudoCustomer.userId}`);
       return;
     }
 
-    const balances = wallet.getBalances();
+    // Get balances from all wallets
+    const allBalances = wallets.flatMap(wallet => wallet.getBalances());
+
+    const rates = await Promise.all(
+      allBalances.map(async balance => {
+        const rate = await this.rateService.getRates(balance.token);
+        return { token: balance.token, rate };
+      }),
+    );
+
+    let totalValueInNaira = 0;
+
+    for (const balance of allBalances) {
+      const rateEntry = rates.find(r => r.token === balance.token);
+
+      if (!rateEntry || rateEntry.rate.status !== 'success') continue;
+
+      const rate = parseFloat(rateEntry.rate.data);
+      const balanceValue = balance.availableBalance * rate;
+
+      totalValueInNaira += balanceValue;
+    }
+
+    return {
+      statusCode: 200,
+      responseCode: '00',
+      data: {
+        balance: totalValueInNaira,
+      },
+    };
   }
 }

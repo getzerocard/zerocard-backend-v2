@@ -26,24 +26,6 @@ export class WalletEntity {
     return this.address;
   }
 
-  // getBalances(): Record<string, { id: string; ledgerBalance: number; availableBalance: number }> {
-  //   const tokenSums: Record<
-  //     string,
-  //     { id: string; ledgerBalance: number; availableBalance: number }
-  //   > = {};
-  //   for (const balance of this.balances) {
-  //     const symbol = balance.token.symbol;
-  //     const ledgerBalance = Number(balance.ledgerBalance);
-  //     const availableBalance = Number(balance.availableBalance);
-  //     tokenSums[symbol] = {
-  //       id: balance.id,
-  //       ledgerBalance: ledgerBalance,
-  //       availableBalance: availableBalance,
-  //     };
-  //   }
-  //   return tokenSums;
-  // }
-
   getBalances(): {
     id: string;
     token: string;
