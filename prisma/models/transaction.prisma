@@ -42,6 +42,7 @@ model TransactionEntry {
   amount        Decimal     @map("amount")
   memo          String?     @map("memo")
   createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  hash          String?     @map("hash")
 
   @@index([transactionId])
   @@index([walletId])
@@ -51,4 +52,5 @@ model TransactionEntry {
 enum EntryType {
   DEBIT  @map("debit")
   CREDIT @map("credit")
+  SWAP   @map("swap")
 }
