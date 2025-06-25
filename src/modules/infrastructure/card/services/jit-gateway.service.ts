@@ -1,5 +1,5 @@
 import { JitGatewayWebhookEvent } from '@/modules/infrastructure/card/types';
-import { RatesService } from '@/modules/infrastructure/rates';
+import { WalletsService } from '@/modules/core/wallets/services';
 import { PrismaService } from '@/infrastructure';
 import { ConfigService } from '@nestjs/config';
 import { JitGatewayEventDto } from '../dtos';
@@ -13,7 +13,7 @@ export class JitGatewayService {
     private readonly logger: PinoLogger,
     private readonly configService: ConfigService,
     private readonly prismaService: PrismaService,
-    private readonly rateService: RatesService,
+    private readonly walletsService: WalletsService,
   ) {
     this.logger.setContext(JitGatewayService.name);
   }
@@ -69,7 +69,7 @@ export class JitGatewayService {
   }
 
   private async handleAuthorizationRequest(body: JitGatewayEventDto) {
-    this.logger.info('Sudo JIT Gateway: Handling authorization request', { body });
+    this.logger.info(`Sudo JIT Gateway: Handling authorization request: ${body._id}`);
   }
 
   private async handleAuthorizationDeclined(body: JitGatewayEventDto) {
@@ -96,41 +96,13 @@ export class JitGatewayService {
       return;
     }
 
-    const wallets = await this.getUserWallet(sudoCustomer.userId);
-
-    if (!wallets || wallets.length === 0) {
-      this.logger.error(`Sudo JIT Gateway: Wallet not found: ${sudoCustomer.userId}`);
-      return;
-    }
-
-    // Get balances from all wallets
-    const allBalances = wallets.flatMap(wallet => wallet.getBalances());
-
-    const rates = await Promise.all(
-      allBalances.map(async balance => {
-        const rate = await this.rateService.getRates(balance.token);
-        return { token: balance.token, rate };
-      }),
-    );
-
-    let totalValueInNaira = 0;
-
-    for (const balance of allBalances) {
-      const rateEntry = rates.find(r => r.token === balance.token);
-
-      if (!rateEntry || rateEntry.rate.status !== 'success') continue;
-
-      const rate = parseFloat(rateEntry.rate.data);
-      const balanceValue = balance.availableBalance * rate;
-
-      totalValueInNaira += balanceValue;
-    }
+    const totalBalance = await this.walletsService.getTotalBalance(sudoCustomer.userId);
 
     return {
       statusCode: 200,
       responseCode: '00',
       data: {
-        balance: totalValueInNaira,
+        balance: totalBalance,
       },
     };
   }

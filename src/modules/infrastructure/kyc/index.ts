@@ -1,2 +1,2 @@
-export * from './kyc-infrastructe.module';
+export * from './kyc-infrastructure.module';
 export * from './services';

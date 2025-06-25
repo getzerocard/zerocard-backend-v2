@@ -35,7 +35,7 @@ export class CardOrderService {
     );
 
     const cardOrder = await this.database.$transaction(async tx => {
-      const reference = Util.generateUlid('co'); // co = card order
+      const reference = Util.generateUlid('co').toLowerCase(); // co = card order
       const cardOrder = await this.database.cardOrder.create({
         data: {
           user: { connect: { id: user.getId() } },

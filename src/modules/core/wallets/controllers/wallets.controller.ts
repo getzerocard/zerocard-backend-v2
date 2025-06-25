@@ -4,7 +4,7 @@ import { WalletsService } from '../services';
 import { WalletsSwagger } from '../swagger';
 import { PinoLogger } from 'nestjs-pino';
 import { JwtAuthGuard } from '@/common';
-import { UserEntity } from '@/shared';
+import { UserEntity, WalletEntity } from '@/shared';
 import { Request } from 'express';
 
 @ApiTags('Wallets')
@@ -32,6 +32,8 @@ export class WalletsController {
   async getWallets(@Req() req: Request) {
     const user = req.user as UserEntity;
     const wallets = await this.walletsService.getWallets(user.id);
-    return wallets;
+    return wallets.map(wallet => {
+      return WalletEntity.fromRawData(wallet).getWalletDetails();
+    });
   }
 }

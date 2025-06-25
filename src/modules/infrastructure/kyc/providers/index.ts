@@ -1,1 +1,1 @@
-export * from './smile-id.provider';
+export * from './meta-map.provider';
