@@ -1,8 +1,9 @@
 import { WalletsInfrastructureService } from '@/modules/infrastructure/wallet';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { UserEntity, WalletEntity } from '@/shared';
+import { RatesService } from '@/modules/infrastructure/rates';
 import { PrismaService } from '@/infrastructure';
 import { PinoLogger } from 'nestjs-pino';
+import { UserEntity } from '@/shared';
 
 interface AllocationResult {
   id: string;
@@ -18,6 +19,7 @@ export class WalletsService {
     private readonly logger: PinoLogger,
     private readonly database: PrismaService,
     private readonly walletsInfraService: WalletsInfrastructureService,
+    private readonly rateService: RatesService,
   ) {
     this.logger.setContext(WalletsService.name);
   }
@@ -29,7 +31,7 @@ export class WalletsService {
   }
 
   async getWallets(userId: string) {
-    const wallets = await this.database.wallet.findMany({
+    return await this.database.wallet.findMany({
       where: {
         ownerId: userId,
         isActive: true,
@@ -42,18 +44,6 @@ export class WalletsService {
         },
       },
     });
-
-    // We don't want to return the id and balance id of the wallet and balances
-    const walletDetails = wallets.map(wallet => {
-      const walletDetails = WalletEntity.fromRawData(wallet).getWalletDetails();
-      delete walletDetails.id;
-      walletDetails.balances.forEach(balance => {
-        delete balance.id;
-      });
-      return walletDetails;
-    });
-
-    return walletDetails;
   }
 
   /**
@@ -88,18 +78,17 @@ export class WalletsService {
     errorMsg?: string,
   ): Promise<AllocationResult[]> {
     const wallets = await this.getWallets(userId);
-
     const balances: AllocationResult[] = [];
 
     for (const wallet of wallets) {
       for (const [token, balance] of Object.entries(wallet.balances)) {
-        if ((balance?.availableBalance || 0) > 0) {
+        if ((balance?.availableBalance?.toNumber() || 0) > 0) {
           balances.push({
             id: wallet.id,
             balanceId: balance.id,
             token,
             address: wallet.address,
-            amount: balance.availableBalance,
+            amount: balance.availableBalance.toNumber(),
           });
         }
       }
@@ -123,5 +112,40 @@ export class WalletsService {
     }
 
     return result;
+  }
+
+  async getTotalBalance(userId: string) {
+    this.logger.info(`Getting total balance for user: ${userId}`);
+    const wallets = await this.getWallets(userId);
+
+    if (!wallets || wallets.length === 0) {
+      this.logger.error(`Wallet not found: ${userId}`);
+      return;
+    }
+
+    // Get balances from all wallets
+    const allBalances = wallets.flatMap(wallet => wallet.balances);
+
+    const rates = await Promise.all(
+      allBalances.map(async balance => {
+        const rate = await this.rateService.getRates(balance.token.symbol);
+        return { token: balance.token, rate };
+      }),
+    );
+
+    let totalValueInNaira = 0;
+
+    for (const balance of allBalances) {
+      const rateEntry = rates.find(r => r.token.symbol === balance.token.symbol);
+
+      if (!rateEntry || rateEntry.rate.status !== 'success') continue;
+
+      const rate = parseFloat(rateEntry.rate.data);
+      const balanceValue = balance.availableBalance.toNumber() * rate;
+
+      totalValueInNaira += balanceValue;
+    }
+
+    return totalValueInNaira;
   }
 }

@@ -1,1 +1,1 @@
-export * from './smile-id.controller';
+export * from './metamap.controller';

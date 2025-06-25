@@ -27,7 +27,6 @@ export class WalletEntity {
   }
 
   getBalances(): {
-    id: string;
     token: string;
     ledgerBalance: number;
     availableBalance: number;
@@ -36,7 +35,6 @@ export class WalletEntity {
 
     for (const balance of this.balances) {
       balancesArray.push({
-        id: balance.id,
         token: balance.token.symbol,
         ledgerBalance: Number(balance.ledgerBalance),
         availableBalance: Number(balance.availableBalance),

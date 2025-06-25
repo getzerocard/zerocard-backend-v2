@@ -1,1 +1,1 @@
-export * from './smile-id.service';
+export * from './metamap.service';
